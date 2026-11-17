@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مختبر التشخيص الذكي | فحص الهاتف، الحاسوب، الإنترنت ويد التحكم</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --ambient-1: rgba(6, 182, 212, 0.16);
+            --ambient-2: rgba(139, 92, 246, 0.14);
+            --ambient-3: rgba(16, 185, 129, 0.08);
+            --grid-color: rgba(56, 189, 248, 0.045);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #050811;
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Dynamic Abstract Ambient Backdrop */
+        #ambient-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            background-color: #050811;
+            background-image: 
+                radial-gradient(circle at 15% 15%, var(--ambient-1) 0%, transparent 48%),
+                radial-gradient(circle at 85% 20%, var(--ambient-2) 0%, transparent 48%),
+                radial-gradient(circle at 50% 90%, var(--ambient-3) 0%, transparent 55%),
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Section-Specific Thematic Background Layer */
+        #theme-pattern-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 1;
+            background-repeat: repeat;
+            transition: opacity 0.6s ease, background-image 0.6s ease, transform 0.8s ease;
+        }
+
+        /* Modern Glassmorphism Card */
+        .glass-card {
+            background: rgba(13, 19, 34, 0.68);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        /* ========================================== */
+        /* 3D REALISTIC MECHANICAL KEYBOARD STYLING   */
+        /* ========================================== */
+        .mech-chassis {
+            background: linear-gradient(145deg, #1b2232 0%, #0d111a 100%);
+            border: 2px solid #2b354b;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.85),
+                inset 0 2px 3px rgba(255, 255, 255, 0.12),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .mech-plate {
+            background: #070a10;
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.9);
+            border: 1px solid #1a2130;
+        }
+
+        .keycap {
+            position: relative;
+            background: linear-gradient(180deg, #262f42 0%, #19202e 100%);
+            border: 1px solid #38445e;
+            border-bottom: 4px solid #0e131d;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-weight: 700;
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px rgba(255, 255, 255, 0.18);
+            transition: transform 0.06s ease, border-bottom-width 0.06s ease, box-shadow 0.08s ease, background 0.1s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.05;
+            padding: 2px;
+        }
+
+        .keycap .sub-char {
+            font-size: 9px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Inner concave top surface of keycap */
+        .keycap::after {
+            content: '';
+            position: absolute;
+            inset: 2px 3px 4px 3px;
+            border-radius: 4px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(0,0,0,0.2));
+            pointer-events: none;
+        }
+
+        /* RGB Underglow Modes */
+        .rgb-cyan .keycap { box-shadow: 0 4px 8px rgba(6, 182, 212, 0.22), inset 0 1px 1px rgba(255,255,255,0.15); }
+        .rgb-purple .keycap { box-shadow: 0 4px 8px rgba(168, 85, 247, 0.25), inset 0 1px 1px rgba(255,255,255,0.15); }
+        .rgb-emerald .keycap { box-shadow: 0 4px 8px rgba(16, 185, 129, 0.22), inset 0 1px 1px rgba(255,255,255,0.15); }
+
+        /* Key Pressed State (Physical Depression) */
+        .keycap.active {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+            background: linear-gradient(180deg, #06b6d4 0%, #0284c7 100%) !important;
+            border-color: #67e8f9 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 18px rgba(6, 182, 212, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Key Tested State */
+        .keycap.tested {
+            border-color: #10b981;
+            background: linear-gradient(180deg, #163332 0%, #0e2222 100%);
+            color: #6ee7b7;
+        }
+
+        /* Gamepad SVG Interactive Highlights */
+        .gp-btn {
+            transition: fill 0.08s ease, stroke 0.08s ease, filter 0.08s ease;
+        }
+        .gp-ps-active {
+            fill: #38bdf8 !important;
+            stroke: #ffffff !important;
+            filter: drop-shadow(0 0 10px #38bdf8);
+        }
+        .gp-xbox-active {
+            fill: #22c55e !important;
+            stroke: #ffffff !important;
+            filter: drop-shadow(0 0 10px #22c55e);
+        }
+
+        /* Tab Transitions */
+        .tab-section {
+            display: none;
+            animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .tab-section.active {
+            display: block;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #050811; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Dynamic Ambient Background & Theme Pattern Layer -->
+    <div id="ambient-backdrop"></div>
+    <div id="theme-pattern-layer"></div>
+
+    <!-- Custom Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Fullscreen Screen / Multi-Touch Overlay -->
+    <div id="fullscreen-overlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center cursor-pointer select-none">
+        <canvas id="fullscreen-touch-canvas" class="absolute inset-0 w-full h-full hidden"></canvas>
+        <div id="fullscreen-hud" class="relative z-10 bg-slate-950/85 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/15 text-center max-w-md mx-4 pointer-events-none shadow-2xl">
+            <p id="fs-title" class="text-lg font-bold text-cyan-400 mb-1">اختبار الشاشة</p>
+            <p id="fs-desc" class="text-sm text-slate-300">اضغط في أي مكان لتغيير اللون، أو اضغط على زر الخروج للعودة.</p>
+            <p id="fs-touch-count" class="text-xs text-emerald-400 mt-2 font-mono hidden">نقاط اللمس النشطة: 0</p>
+        </div>
+        <button onclick="exitFullscreenTest(event)" class="fixed top-5 right-5 z-20 bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2 transition">
+            <i class="fa-solid fa-xmark"></i> خروج
+        </button>
+    </div>
+
+    <!-- Top Modern Glass Navbar -->
+    <header class="sticky top-0 z-40 glass-card border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-3 gap-3">
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-3">
+                    <div id="brand-icon-box" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg transition-all duration-500">
+                        <i class="fa-solid fa-microchip text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tight text-white">
+                            مختبر <span id="brand-accent" class="text-cyan-400 transition-colors duration-500">الفحص الشامل</span>
+                        </h1>
+                        <p class="text-[11px] text-slate-400 font-tajawal">تشخيص العتاد، الشبكة، وأيدي التحكم بدقة متناهية</p>
+                    </div>
+                </div>
+
+                <!-- 4 Main Navigation Pills -->
+                <nav class="grid grid-cols-2 sm:flex items-center gap-1.5 w-full md:w-auto bg-slate-950/75 p-1.5 rounded-2xl border border-white/10">
+                    <button onclick="switchTab('phone')" id="nav-phone" class="nav-btn active flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span>قسم الهاتف</span>
+                    </button>
+                    <button onclick="switchTab('pc')" id="nav-pc" class="nav-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                        <i class="fa-solid fa-keyboard"></i>
+                        <span>قسم الحاسوب</span>
+                    </button>
+                    <button onclick="switchTab('internet')" id="nav-internet" class="nav-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>فحص الإنترنت</span>
+                    </button>
+                    <button onclick="switchTab('gamepad')" id="nav-gamepad" class="nav-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                        <i class="fa-solid fa-gamepad"></i>
+                        <span>يد التحكم</span>
+                    </button>
+                    <button onclick="switchTab('reaction')" id="nav-reaction" class="nav-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>رد الفعل</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+
+        <!-- ======================================================== -->
+        <!-- 1. PHONE DIAGNOSTICS SECTION (قسم الهاتف الذكي)          -->
+        <!-- ======================================================== -->
+        <section id="sec-phone" class="tab-section active space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </span>
+                        تشخيص الهاتف الذكي
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">فحص شاشة اللمس المتعدد، البكسلات الميتة، الميكروفون، السماعات، الاهتزاز، المستشعرات والبطارية.</p>
+                </div>
+                <span class="inline-flex items-center gap-2 text-xs bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-3.5 py-1.5 rounded-full font-bold self-start sm:self-auto">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> وضع الفحص التفاعلي
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Screen & Multi-Touch -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-11 h-11 rounded-2xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-xl border border-cyan-500/20">
+                                <i class="fa-solid fa-fingerprint"></i>
+                            </div>
+                            <span class="text-[11px] font-mono text-cyan-400/80 bg-cyan-500/10 px-2.5 py-1 rounded-lg">DISPLAY</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1.5">الشاشة واللمس المتعدد</h3>
+                        <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+                            اختبر استجابة جميع نقاط اللمس على الشاشة بالرسم الحر، واكشف البكسلات الميتة عبر عرض الألوان الأساسية النقية.
+                        </p>
+                    </div>
+                    <div class="space-y-2.5">
+                        <button onclick="startTouchTest()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/20">
+                            <i class="fa-solid fa-hand-pointer"></i> فحص اللمس المتعدد (Multi-Touch)
+                        </button>
+                        <button onclick="startPixelTest()" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-white/10 font-bold text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-palette"></i> فحص البكسلات الميتة والألوان
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Microphone & Audio Recorder -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-400 flex items-center justify-center text-xl border border-purple-500/20">
+                                <i class="fa-solid fa-microphone-lines"></i>
+                            </div>
+                            <span id="phone-mic-db" class="text-xs font-mono text-purple-300 bg-purple-500/15 px-2.5 py-1 rounded-lg border border-purple-500/20">0 dB</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1">الميكروفون والتسجيل</h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            مقياس ترددات حي للصوت مع إمكانية تسجيل 5 ثوانٍ وإعادة سماعها فوراً.
+                        </p>
+                        <div class="bg-slate-950/90 rounded-2xl p-2 border border-white/5 mb-4">
+                            <canvas id="phone-mic-canvas" class="w-full h-20 rounded-xl"></canvas>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button id="btn-phone-mic" onclick="toggleMicTest('phone')" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-purple-600/20">
+                            <i class="fa-solid fa-microphone"></i> تشغيل الفحص
+                        </button>
+                        <button id="btn-phone-rec" onclick="recordAndPlayAudio()" class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-circle-dot text-rose-500"></i> سجل واسمع (5ث)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stereo Speakers & Interactive Frequency Generator -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/20">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </div>
+                            <span id="freq-display-badge" class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">440 Hz</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1">السماعات ومولد الترددات</h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            اختبر القناتين (يسار/يمين/معاً) وتحكم بالتردد الحقيقي من 100Hz إلى 10,000Hz.
+                        </p>
+                        <div class="grid grid-cols-3 gap-1.5 mb-3">
+                            <button onclick="playStereoTone(-1, parseInt(document.getElementById('tone-freq-slider').value))" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 text-xs font-bold text-emerald-300 transition">
+                                يسار (L)
+                            </button>
+                            <button onclick="playStereoTone(0, parseInt(document.getElementById('tone-freq-slider').value))" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 text-xs font-bold text-cyan-300 transition">
+                                معاً (Stereo)
+                            </button>
+                            <button onclick="playStereoTone(1, parseInt(document.getElementById('tone-freq-slider').value))" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 text-xs font-bold text-emerald-300 transition">
+                                يمين (R)
+                            </button>
+                        </div>
+                        <div class="bg-slate-950/80 p-2.5 rounded-xl border border-white/5 mb-3">
+                            <input id="tone-freq-slider" type="range" min="100" max="10000" step="50" value="440" oninput="document.getElementById('freq-display-badge').textContent = this.value + ' Hz'" class="w-full accent-emerald-400 cursor-pointer">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="testVibration([300])" class="py-2 px-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] transition">
+                            نبضة واحدة
+                        </button>
+                        <button onclick="testVibration([200, 100, 200])" class="py-2 px-2 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-white font-bold text-[11px] transition">
+                            نبضتان
+                        </button>
+                        <button onclick="testVibration([150,80,150,80,150,180,400,80,400,80,400])" class="py-2 px-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] transition">
+                            نمط SOS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stereo Speakers & Vibration -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/20">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </div>
+                            <span class="text-[11px] font-mono text-emerald-400/80 bg-emerald-500/10 px-2.5 py-1 rounded-lg">AUDIO</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1.5">السماعات والاهتزاز</h3>
+                        <p class="text-xs text-slate-400 mb-4">
+                            افحص السماعة العلوية والسفلية (يمين ويسار) وترددات الصوت بالإضافة لمحرك الاهتزاز.
+                        </p>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <button onclick="playStereoTone(-1, 440)" class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 text-xs font-bold text-emerald-300 flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-volume-low"></i> يسار (L)
+                            </button>
+                            <button onclick="playStereoTone(1, 523.25)" class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/40 text-xs font-bold text-emerald-300 flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-volume-high"></i> يمين (R)
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="playFrequencySweep()" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-wave-square"></i> الترددات
+                        </button>
+                        <button onclick="testVibration()" class="py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-mobile-vibrate"></i> الاهتزاز
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Physical Buttons -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-xl border border-amber-500/20">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <span class="text-[11px] font-mono text-amber-400/80 bg-amber-500/10 px-2.5 py-1 rounded-lg">BUTTONS</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1">أزرار الهاتف الجانبية</h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            اضغط على أزرار رفع وخفض الصوت في هاتفك للتحقق من استجابتها.
+                        </p>
+                        <div class="bg-slate-950/90 border border-white/5 rounded-2xl p-3 text-center mb-3">
+                            <span class="text-[11px] text-slate-400 block">آخر زر تم رصده:</span>
+                            <span id="last-phone-key" class="text-sm font-bold text-amber-400 font-mono">في انتظار الضغط...</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div id="ind-vol-up" class="p-2.5 rounded-xl bg-slate-950/80 border border-white/5 text-xs text-slate-400 transition">
+                            <i class="fa-solid fa-volume-high block mb-1"></i> رفع الصوت
+                        </div>
+                        <div id="ind-vol-down" class="p-2.5 rounded-xl bg-slate-950/80 border border-white/5 text-xs text-slate-400 transition">
+                            <i class="fa-solid fa-volume-low block mb-1"></i> خفض الصوت
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gyroscope, Bubble Level & Battery -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl border border-blue-500/20">
+                                <i class="fa-solid fa-compass"></i>
+                            </div>
+                            <span id="battery-badge" class="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                                <i class="fa-solid fa-battery-three-quarters"></i> --%
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-1">الجيروسكوب وميزان الميلان</h3>
+                        <p id="battery-time-sub" class="text-[11px] text-slate-400 mb-3">
+                            أمل الهاتف لمشاهدة حركة الفقاعة ومستشعر الدوران الفعلي.
+                        </p>
+                        <div class="flex items-center gap-3 bg-slate-950/90 p-3 rounded-2xl border border-white/5 mb-3">
+                            <!-- Live 2D Bubble Level -->
+                            <div class="w-16 h-16 shrink-0 rounded-full border border-cyan-500/40 bg-slate-900 relative flex items-center justify-center overflow-hidden">
+                                <div class="w-full h-[1px] bg-white/10 absolute"></div>
+                                <div class="h-full w-[1px] bg-white/10 absolute"></div>
+                                <div id="gyro-bubble" class="w-4 h-4 rounded-full bg-cyan-400 shadow-[0_0_10px_#06b6d4] absolute transition-transform duration-75"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5 w-full text-center font-mono text-xs">
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Alpha</span>
+                                    <span id="gyro-alpha" class="text-cyan-400 font-bold">0°</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Beta</span>
+                                    <span id="gyro-beta" class="text-purple-400 font-bold">0°</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Gamma</span>
+                                    <span id="gyro-gamma" class="text-emerald-400 font-bold">0°</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="enableMotionSensors()" class="w-full py-2.5 px-4 rounded-xl bg-blue-600/20 hover:bg-blue-600/35 text-blue-300 border border-blue-500/30 font-bold text-xs flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-rotate"></i> تفعيل مستشعر الحركة (iOS / Android)
+                    </button>
+                </div>
+
+                <!-- Phone Camera + Snapshot -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-11 h-11 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-xl border border-rose-500/20">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <button onclick="captureCameraSnapshot('phone')" class="text-[11px] font-bold text-cyan-300 bg-cyan-500/15 hover:bg-cyan-500/25 px-2.5 py-1 rounded-lg border border-cyan-500/30 transition">
+                                <i class="fa-solid fa-camera-retro"></i> التقط صورة
+                            </button>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-white mb-2">اختبار الكاميرا الحية</h3>
+                        <div class="relative bg-slate-950 rounded-2xl overflow-hidden border border-white/10 h-28 mb-3 flex items-center justify-center">
+                            <video id="phone-cam-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+                            <img id="phone-cam-snap" alt="لقطة" class="w-full h-full object-cover hidden"/>
+                            <span id="phone-cam-placeholder" class="text-xs text-slate-500 flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-video-slash text-lg"></i> الكاميرا متوقفة
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="toggleCamera('phone', 'user')" class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition">
+                            أمامية (Selfie)
+                        </button>
+                        <button onclick="toggleCamera('phone', 'environment')" class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-bold text-xs transition">
+                            خلفية (Back)
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 2. PC HARDWARE & REALISTIC MECHANICAL KEYBOARD           -->
+        <!-- ======================================================== -->
+        <section id="sec-pc" class="tab-section space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-keyboard"></i>
+                        </span>
+                        مختبر فحص الملحقات والعتاد
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">لوحة مفاتيح ميكانيكية واقعية، فاحص الفأرة الدقيق، البلوتوث، الشاشة، الصوت والكاميرا.</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-mono bg-slate-950/80 border border-white/10 px-3.5 py-1.5 rounded-xl self-start sm:self-auto">
+                    <span class="text-slate-400">معدل التحديث:</span>
+                    <span id="pc-fps-counter" class="text-emerald-400 font-bold">60 FPS</span>
+                </div>
+            </div>
+
+            <!-- 3D Realistic Mechanical Keyboard Chassis -->
+            <div class="glass-card rounded-3xl p-5 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-keyboard text-cyan-400"></i>
+                            لوحة المفاتيح الكاملة الحقيقية (Full-Size Rectangular Keyboard)
+                        </h3>
+                        <p class="text-xs text-slate-400">اضغط على أي مفتاح في لوحة مفاتيحك لمشاهدة الاستجابة الفورية مع سجل المفاتيح المضغوطة.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- RGB Backlight Switcher -->
+                        <div class="flex items-center gap-1.5 bg-slate-950/90 border border-white/10 px-2.5 py-1.5 rounded-xl text-xs">
+                            <span class="text-slate-400 text-[11px] ml-1">إضاءة RGB:</span>
+                            <button onclick="setKeyboardRGB('rgb-cyan')" class="w-4 h-4 rounded-full bg-cyan-400 ring-2 ring-white/40"></button>
+                            <button onclick="setKeyboardRGB('rgb-purple')" class="w-4 h-4 rounded-full bg-purple-500"></button>
+                            <button onclick="setKeyboardRGB('rgb-emerald')" class="w-4 h-4 rounded-full bg-emerald-400"></button>
+                        </div>
+                        <div class="bg-slate-950/90 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-mono">
+                            الزر: <span id="kb-last-key" class="text-cyan-400 font-bold">--</span> | 
+                            الكود: <span id="kb-last-code" class="text-purple-400 font-bold">--</span> |
+                            رقم: <span id="kb-last-keycode" class="text-emerald-400 font-bold">--</span>
+                        </div>
+                        <button onclick="resetKeyboardTest()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 border border-white/10 transition">
+                            <i class="fa-solid fa-rotate-left"></i> تصفير
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pressed Keys History Strip -->
+                <div dir="ltr" class="mb-3 bg-slate-950/85 border border-white/10 rounded-xl px-3 py-2 flex items-center gap-2 overflow-x-auto text-[11px] font-mono">
+                    <span class="text-slate-500 shrink-0">LOG:</span>
+                    <div id="kb-history-strip" class="flex items-center gap-1.5 text-cyan-300">
+                        <span class="text-slate-600">Press any key to start testing...</span>
+                    </div>
+                </div>
+
+                <!-- Realistic Full Rectangular Mechanical Keyboard Body (Main + Nav + Numpad) -->
+                <div dir="ltr" class="overflow-x-auto pb-2">
+                    <div id="mech-keyboard-body" class="mech-chassis rgb-cyan min-w-[1060px] p-4 rounded-2xl mx-auto">
+                        <!-- Top Metallic Brand Strip & Status LEDs -->
+                        <div class="flex items-center justify-between px-2 pb-3 mb-3 border-b border-white/10">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="text-[11px] font-mono tracking-widest text-slate-300 ml-2 font-bold">FULL-SIZE 104-KEY MECHANICAL KEYBOARD</span>
+                            </div>
+                            <div class="flex items-center gap-4 text-[10px] font-mono text-slate-400">
+                                <span id="led-num" class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]"></span> NUM</span>
+                                <span id="led-caps" class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-700"></span> CAPS</span>
+                                <span id="led-scroll" class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-700"></span> SCRL</span>
+                            </div>
+                        </div>
+
+                        <!-- 3-Block Rectangular Physical Keyboard Layout -->
+                        <div class="grid grid-cols-[1fr_132px_176px] gap-3 font-mono text-xs">
+                            
+                            <!-- BLOCK 1: MAIN ALPHANUMERIC + FUNCTION ROW -->
+                            <div class="mech-plate p-2.5 rounded-xl space-y-2">
+                                <!-- Row 0: Esc + F1-F4 + F5-F8 + F9-F12 -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5 pb-1">
+                                    <div data-code="Escape" class="keycap h-9 text-rose-400 text-[11px]">Esc</div>
+                                    <div class="col-span-1"></div>
+                                    <div data-code="F1" class="keycap h-9 text-[11px]">F1</div>
+                                    <div data-code="F2" class="keycap h-9 text-[11px]">F2</div>
+                                    <div data-code="F3" class="keycap h-9 text-[11px]">F3</div>
+                                    <div data-code="F4" class="keycap h-9 text-[11px]">F4</div>
+                                    <div data-code="F5" class="keycap h-9 text-[11px]">F5</div>
+                                    <div data-code="F6" class="keycap h-9 text-[11px]">F6</div>
+                                    <div data-code="F7" class="keycap h-9 text-[11px]">F7</div>
+                                    <div data-code="F8" class="keycap h-9 text-[11px]">F8</div>
+                                    <div class="col-span-1"></div>
+                                    <div data-code="F9" class="keycap h-9 text-[11px]">F9</div>
+                                    <div data-code="F10" class="keycap h-9 text-[11px]">F10</div>
+                                    <div data-code="F11" class="keycap h-9 text-[11px]">F11</div>
+                                    <div data-code="F12" class="keycap h-9 text-[11px]">F12</div>
+                                </div>
+
+                                <!-- Row 1: Numbers with Dual Symbols -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                                    <div data-code="Backquote" class="keycap h-11"><span class="sub-char">~</span>`</div>
+                                    <div data-code="Digit1" class="keycap h-11"><span class="sub-char">!</span>1</div>
+                                    <div data-code="Digit2" class="keycap h-11"><span class="sub-char">@</span>2</div>
+                                    <div data-code="Digit3" class="keycap h-11"><span class="sub-char">#</span>3</div>
+                                    <div data-code="Digit4" class="keycap h-11"><span class="sub-char">$</span>4</div>
+                                    <div data-code="Digit5" class="keycap h-11"><span class="sub-char">%</span>5</div>
+                                    <div data-code="Digit6" class="keycap h-11"><span class="sub-char">^</span>6</div>
+                                    <div data-code="Digit7" class="keycap h-11"><span class="sub-char">&amp;</span>7</div>
+                                    <div data-code="Digit8" class="keycap h-11"><span class="sub-char">*</span>8</div>
+                                    <div data-code="Digit9" class="keycap h-11"><span class="sub-char">(</span>9</div>
+                                    <div data-code="Digit0" class="keycap h-11"><span class="sub-char">)</span>0</div>
+                                    <div data-code="Minus" class="keycap h-11"><span class="sub-char">_</span>-</div>
+                                    <div data-code="Equal" class="keycap h-11"><span class="sub-char">+</span>=</div>
+                                    <div data-code="Backspace" class="keycap col-span-2 h-11 text-[10px]">⌫ Backspace</div>
+                                </div>
+
+                                <!-- Row 2: Tab + QWERTY -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                                    <div data-code="Tab" class="keycap col-span-2 h-11 text-[11px]">Tab ⇥</div>
+                                    <div data-code="KeyQ" class="keycap h-11">Q</div>
+                                    <div data-code="KeyW" class="keycap h-11">W</div>
+                                    <div data-code="KeyE" class="keycap h-11">E</div>
+                                    <div data-code="KeyR" class="keycap h-11">R</div>
+                                    <div data-code="KeyT" class="keycap h-11">T</div>
+                                    <div data-code="KeyY" class="keycap h-11">Y</div>
+                                    <div data-code="KeyU" class="keycap h-11">U</div>
+                                    <div data-code="KeyI" class="keycap h-11">I</div>
+                                    <div data-code="KeyO" class="keycap h-11">O</div>
+                                    <div data-code="KeyP" class="keycap h-11">P</div>
+                                    <div data-code="BracketLeft" class="keycap h-11"><span class="sub-char">{</span>[</div>
+                                    <div data-code="BracketRight" class="keycap h-11"><span class="sub-char">}</span>]</div>
+                                    <div data-code="Backslash" class="keycap h-11"><span class="sub-char">|</span>\</div>
+                                </div>
+
+                                <!-- Row 3: CapsLock + ASDF + Enter -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                                    <div data-code="CapsLock" class="keycap col-span-2 h-11 text-[10px]">Caps Lock</div>
+                                    <div data-code="KeyA" class="keycap h-11">A</div>
+                                    <div data-code="KeyS" class="keycap h-11">S</div>
+                                    <div data-code="KeyD" class="keycap h-11">D</div>
+                                    <div data-code="KeyF" class="keycap h-11">F</div>
+                                    <div data-code="KeyG" class="keycap h-11">G</div>
+                                    <div data-code="KeyH" class="keycap h-11">H</div>
+                                    <div data-code="KeyJ" class="keycap h-11">J</div>
+                                    <div data-code="KeyK" class="keycap h-11">K</div>
+                                    <div data-code="KeyL" class="keycap h-11">L</div>
+                                    <div data-code="Semicolon" class="keycap h-11"><span class="sub-char">:</span>;</div>
+                                    <div data-code="Quote" class="keycap h-11"><span class="sub-char">"</span>'</div>
+                                    <div data-code="Enter" class="keycap col-span-2 h-11 text-cyan-400 text-[11px]">↵ Enter</div>
+                                </div>
+
+                                <!-- Row 4: Shift + ZXCV + Shift -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                                    <div data-code="ShiftLeft" class="keycap col-span-2 h-11 text-[11px]">⇧ Shift</div>
+                                    <div data-code="KeyZ" class="keycap h-11">Z</div>
+                                    <div data-code="KeyX" class="keycap h-11">X</div>
+                                    <div data-code="KeyC" class="keycap h-11">C</div>
+                                    <div data-code="KeyV" class="keycap h-11">V</div>
+                                    <div data-code="KeyB" class="keycap h-11">B</div>
+                                    <div data-code="KeyN" class="keycap h-11">N</div>
+                                    <div data-code="KeyM" class="keycap h-11">M</div>
+                                    <div data-code="Comma" class="keycap h-11"><span class="sub-char">&lt;</span>,</div>
+                                    <div data-code="Period" class="keycap h-11"><span class="sub-char">&gt;</span>.</div>
+                                    <div data-code="Slash" class="keycap h-11"><span class="sub-char">?</span>/</div>
+                                    <div data-code="ShiftRight" class="keycap col-span-3 h-11 text-[11px]">⇧ Shift</div>
+                                </div>
+
+                                <!-- Row 5: Bottom Modifiers & Long Spacebar -->
+                                <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                                    <div data-code="ControlLeft" class="keycap col-span-2 h-11 text-[11px]">Ctrl</div>
+                                    <div data-code="MetaLeft" class="keycap h-11 text-[11px]"><i class="fa-brands fa-windows"></i></div>
+                                    <div data-code="AltLeft" class="keycap h-11 text-[11px]">Alt</div>
+                                    <div data-code="Space" class="keycap col-span-7 h-11 text-[10px] tracking-widest text-slate-400">SPACE</div>
+                                    <div data-code="AltRight" class="keycap h-11 text-[11px]">Alt</div>
+                                    <div data-code="MetaRight" class="keycap h-11 text-[10px]">Fn</div>
+                                    <div data-code="ControlRight" class="keycap col-span-2 h-11 text-[11px]">Ctrl</div>
+                                </div>
+                            </div>
+
+                            <!-- BLOCK 2: NAVIGATION & ARROW KEYS -->
+                            <div class="mech-plate p-2.5 rounded-xl flex flex-col justify-between">
+                                <!-- Top System Keys -->
+                                <div class="grid grid-cols-3 gap-1.5 pb-1">
+                                    <div data-code="PrintScreen" class="keycap h-9 text-[9px]">PrtSc</div>
+                                    <div data-code="ScrollLock" class="keycap h-9 text-[9px]">ScrLk</div>
+                                    <div data-code="Pause" class="keycap h-9 text-[9px]">Pause</div>
+                                </div>
+
+                                <!-- 6-Key Navigation Cluster -->
+                                <div class="space-y-2">
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <div data-code="Insert" class="keycap h-11 text-[9px]">Ins</div>
+                                        <div data-code="Home" class="keycap h-11 text-[9px]">Home</div>
+                                        <div data-code="PageUp" class="keycap h-11 text-[9px]">PgUp</div>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <div data-code="Delete" class="keycap h-11 text-[9px] text-amber-400">Del</div>
+                                        <div data-code="End" class="keycap h-11 text-[9px]">End</div>
+                                        <div data-code="PageDown" class="keycap h-11 text-[9px]">PgDn</div>
+                                    </div>
+                                </div>
+
+                                <!-- Inverted-T Arrow Keys -->
+                                <div class="space-y-2 pt-2">
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <div></div>
+                                        <div data-code="ArrowUp" class="keycap h-11 text-cyan-300">↑</div>
+                                        <div></div>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-1.5">
+                                        <div data-code="ArrowLeft" class="keycap h-11 text-cyan-300">←</div>
+                                        <div data-code="ArrowDown" class="keycap h-11 text-cyan-300">↓</div>
+                                        <div data-code="ArrowRight" class="keycap h-11 text-cyan-300">→</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOCK 3: NUMERIC KEYPAD (NUMPAD) -->
+                            <div class="mech-plate p-2.5 rounded-xl flex flex-col justify-between">
+                                <!-- Top Numpad Spacer / Indicator -->
+                                <div class="h-9 flex items-center justify-center text-[9px] text-slate-500 tracking-widest border border-white/5 rounded-md bg-slate-950/60">
+                                    NUMPAD
+                                </div>
+
+                                <!-- Numpad Grid -->
+                                <div class="grid grid-cols-4 gap-1.5">
+                                    <div data-code="NumLock" class="keycap h-11 text-[9px]">Num</div>
+                                    <div data-code="NumpadDivide" class="keycap h-11">/</div>
+                                    <div data-code="NumpadMultiply" class="keycap h-11">*</div>
+                                    <div data-code="NumpadSubtract" class="keycap h-11">-</div>
+
+                                    <div data-code="Numpad7" class="keycap h-11">7</div>
+                                    <div data-code="Numpad8" class="keycap h-11">8</div>
+                                    <div data-code="Numpad9" class="keycap h-11">9</div>
+                                    <div data-code="NumpadAdd" class="keycap row-span-2 h-full">+</div>
+
+                                    <div data-code="Numpad4" class="keycap h-11">4</div>
+                                    <div data-code="Numpad5" class="keycap h-11">5</div>
+                                    <div data-code="Numpad6" class="keycap h-11">6</div>
+
+                                    <div data-code="Numpad1" class="keycap h-11">1</div>
+                                    <div data-code="Numpad2" class="keycap h-11">2</div>
+                                    <div data-code="Numpad3" class="keycap h-11">3</div>
+                                    <div data-code="NumpadEnter" class="keycap row-span-2 h-full text-[9px] text-cyan-400">Ent</div>
+
+                                    <div data-code="Numpad0" class="keycap col-span-2 h-11">0</div>
+                                    <div data-code="NumpadDecimal" class="keycap h-11">.</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mouse, Bluetooth/Specs, Cam/Audio Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Pro Interactive Mouse Tester -->
+                <div id="mouse-test-zone" oncontextmenu="return false;" class="glass-card rounded-3xl p-5 select-none cursor-crosshair flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-computer-mouse text-purple-400"></i>
+                            مختبر الفأرة (Pro Mouse)
+                        </h3>
+                        <div class="flex items-center gap-1.5">
+                            <span id="mouse-scroll-dir" class="text-[11px] font-mono bg-slate-950/90 border border-white/10 px-2 py-1 rounded-lg text-cyan-400">العجلة: 0</span>
+                            <button onclick="resetMouseTest(event)" title="تصفير الفأرة" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-[11px] transition">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Gaming Mouse SVG + Live Trail Canvas -->
+                    <div class="relative flex items-center justify-center bg-slate-950/85 border border-white/10 rounded-2xl py-3 px-4 my-2 overflow-hidden">
+                        <canvas id="mouse-trail-canvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-65"></canvas>
+                        
+                        <svg dir="ltr" viewBox="0 0 180 230" class="w-36 h-44 relative z-10 drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]">
+                            <defs>
+                                <linearGradient id="mouseShell" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#273145"/>
+                                    <stop offset="100%" stop-color="#0f1522"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Cable -->
+                            <path d="M 90 22 C 90 10 95 5 90 0" fill="none" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+                            <!-- Mouse Palm Body -->
+                            <path d="M 38 95 L 142 95 L 142 155 C 142 198 118 220 90 220 C 62 220 38 198 38 155 Z" fill="url(#mouseShell)" stroke="#334155" stroke-width="2.5"/>
+                            <!-- RGB Strip on Palm -->
+                            <path d="M 55 182 Q 90 202 125 182" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+
+                            <!-- Left Click Button (button = 0) -->
+                            <path id="mouse-btn-0" d="M 38 92 L 38 64 C 38 36 60 22 86 22 L 86 92 Z" fill="#1e293b" stroke="#475569" stroke-width="2" class="transition-colors duration-75"/>
+                            <text x="62" y="62" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="bold" font-family="monospace">LMB</text>
+
+                            <!-- Right Click Button (button = 2) -->
+                            <path id="mouse-btn-2" d="M 142 92 L 142 64 C 142 36 120 22 94 22 L 94 92 Z" fill="#1e293b" stroke="#475569" stroke-width="2" class="transition-colors duration-75"/>
+                            <text x="118" y="62" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="bold" font-family="monospace">RMB</text>
+
+                            <!-- Scroll Wheel / Middle Click (button = 1) -->
+                            <rect id="mouse-btn-1" x="83" y="36" width="14" height="36" rx="7" fill="#0f172a" stroke="#38bdf8" stroke-width="2" class="transition-colors duration-75"/>
+                            <line x1="90" y1="43" x2="90" y2="65" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3 3"/>
+
+                            <!-- Side Forward Button (button = 4) -->
+                            <rect id="mouse-btn-4" x="30" y="96" width="8" height="24" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.5" class="transition-colors duration-75"/>
+                            <!-- Side Back Button (button = 3) -->
+                            <rect id="mouse-btn-3" x="30" y="125" width="8" height="24" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.5" class="transition-colors duration-75"/>
+                        </svg>
+
+                        <!-- Active Button Badge -->
+                        <div class="absolute bottom-2 right-2.5 z-10 text-[10px] font-mono bg-black/70 border border-white/10 px-2 py-0.5 rounded-md text-slate-300">
+                            الزر: <span id="mouse-active-btn" class="text-cyan-400 font-bold">--</span>
+                        </div>
+                        <div id="mouse-double-badge" class="hidden absolute top-2 left-2.5 z-10 text-[10px] font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 px-2 py-0.5 rounded-md">
+                            ⚠ نقر مزدوج سريع!
+                        </div>
+                    </div>
+
+                    <!-- Pro Telemetry Metrics -->
+                    <div class="grid grid-cols-4 gap-1.5 text-center font-mono text-[11px]">
+                        <div class="bg-slate-950/90 p-2 rounded-xl border border-white/5">
+                            <span class="text-slate-500 block text-[9px]">الاستجابة</span>
+                            <span id="mouse-hz" class="text-amber-400 font-bold">0 Hz</span>
+                        </div>
+                        <div class="bg-slate-950/90 p-2 rounded-xl border border-white/5">
+                            <span class="text-slate-500 block text-[9px]">السرعة</span>
+                            <span id="mouse-cps" class="text-purple-400 font-bold">0 CPS</span>
+                        </div>
+                        <div class="bg-slate-950/90 p-2 rounded-xl border border-white/5">
+                            <span class="text-slate-500 block text-[9px]">النقرات</span>
+                            <span id="mouse-clicks-count" class="text-emerald-400 font-bold">0</span>
+                        </div>
+                        <div class="bg-slate-950/90 p-2 rounded-xl border border-white/5">
+                            <span class="text-slate-500 block text-[9px]">الموقع</span>
+                            <span id="mouse-coords" class="text-cyan-400 font-bold text-[10px]">0,0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bluetooth & Monitor Specs -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2 mb-3">
+                            <i class="fa-brands fa-bluetooth-b text-blue-400"></i>
+                            البلوتوث، المعالج وكرت الشاشة
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-mono bg-slate-950/90 p-3 rounded-2xl border border-white/5 mb-3">
+                            <div>
+                                <span class="text-slate-500 block text-[10px]">دقة الشاشة</span>
+                                <span id="pc-screen-res" class="text-white font-bold">--</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-[10px]">أنوية المعالج</span>
+                                <span id="pc-cpu-cores" class="text-cyan-400 font-bold">--</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-[10px]">الذاكرة (RAM)</span>
+                                <span id="pc-ram-info" class="text-purple-400 font-bold">--</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-[10px]">عمق الألوان</span>
+                                <span id="pc-color-depth" class="text-emerald-400 font-bold">--</span>
+                            </div>
+                            <div class="col-span-2 pt-1 border-t border-white/5">
+                                <span class="text-slate-500 block text-[10px]">بطاقة الرسوميات (GPU WebGL)</span>
+                                <span id="pc-gpu-info" class="text-amber-300 font-bold text-[11px] truncate block">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <button onclick="scanBluetoothDevices()" class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20">
+                            <i class="fa-brands fa-bluetooth"></i> بحث حقيقي عن أجهزة Bluetooth
+                        </button>
+                        <div id="bt-device-result" class="hidden text-[11px] font-mono bg-blue-950/60 border border-blue-500/30 text-blue-200 px-3 py-1.5 rounded-xl text-center"></div>
+                        <button onclick="startPixelTest()" class="w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-bold text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-display"></i> اختبار ألوان الشاشة (ملء الشاشة)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Webcam, Mic & Speakers -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-headset text-emerald-400"></i>
+                            الكاميرا، الميكروفون والسماعات
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2.5 mb-4">
+                            <div class="bg-slate-950 rounded-2xl border border-white/10 h-24 overflow-hidden flex items-center justify-center relative">
+                                <video id="pc-cam-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+                                <span id="pc-cam-placeholder" class="text-[11px] text-slate-500">كاميرا الويب</span>
+                            </div>
+                            <div class="bg-slate-950 rounded-2xl border border-white/10 h-24 p-2 flex flex-col justify-center">
+                                <canvas id="pc-mic-canvas" class="w-full h-full"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="toggleCamera('pc', 'user')" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition">
+                                <i class="fa-solid fa-video"></i> الكاميرا
+                            </button>
+                            <button id="btn-pc-mic" onclick="toggleMicTest('pc')" class="py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">
+                                <i class="fa-solid fa-microphone"></i> الميكروفون
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="playStereoTone(-1, 440)" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 border border-white/10 font-bold text-xs transition">
+                                سماعة يسار (L)
+                            </button>
+                            <button onclick="playStereoTone(1, 523.25)" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 border border-white/10 font-bold text-xs transition">
+                                سماعة يمين (R)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 3. INTERNET SPEEDTEST (WITH GRADUAL SMOOTH RAMP-UP)       -->
+        <!-- ======================================================== -->
+        <section id="sec-internet" class="tab-section space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </span>
+                        قياس سرعة الإنترنت واستقرار الشبكة
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">قياس تدريجي دقيق لسرعة التحميل (Download)، الرفع (Upload)، زمن الاستجابة (Ping) والتذبذب (Jitter).</p>
+                </div>
+                <div id="net-status-badge" class="inline-flex items-center gap-2 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3.5 py-1.5 rounded-full font-bold self-start sm:self-auto">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> متصل بالإنترنت
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Gradual Speedometer Card -->
+                <div class="lg:col-span-2 glass-card rounded-3xl p-6 flex flex-col items-center justify-between relative overflow-hidden">
+                    
+                    <!-- SVG Speedometer Gauge -->
+                    <div class="relative w-72 h-48 flex items-center justify-center mt-2">
+                        <svg viewBox="0 0 220 140" class="w-full h-full overflow-visible">
+                            <defs>
+                                <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#06b6d4"/>
+                                    <stop offset="50%" stop-color="#3b82f6"/>
+                                    <stop offset="100%" stop-color="#10b981"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Outer Track -->
+                            <path d="M 20 120 A 90 90 0 0 1 200 120" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="15" stroke-linecap="round"/>
+                            <!-- Smooth Animated Progress Arc (Length ~ 282.7) -->
+                            <path id="speed-arc" d="M 20 120 A 90 90 0 0 1 200 120" fill="none" stroke="url(#speedGrad)" stroke-width="15" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="282.7"/>
+                        </svg>
+                        <div class="absolute bottom-2 text-center">
+                            <span id="speed-main-value" class="text-5xl font-black text-white font-mono tracking-tight">0.0</span>
+                            <span class="text-xs text-cyan-400 block font-extrabold tracking-widest uppercase mt-0.5">Mbps</span>
+                            <span id="speed-phase-label" class="text-xs text-slate-400 mt-1 block font-semibold">جاهز لبدء القياس</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Sparkline Graph Canvas -->
+                    <div class="w-full max-w-lg h-14 bg-slate-950/70 rounded-2xl border border-white/5 p-1.5 my-3">
+                        <canvas id="speed-graph-canvas" class="w-full h-full"></canvas>
+                    </div>
+
+                    <button id="btn-start-speedtest" onclick="runSpeedTest()" class="px-9 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-emerald-500 hover:opacity-95 text-white font-black text-sm shadow-xl shadow-cyan-500/20 flex items-center gap-2.5 transition transform active:scale-95">
+                        <i class="fa-solid fa-play"></i> ابدأ اختبار السرعة
+                    </button>
+
+                    <!-- 4 Metrics Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mt-6">
+                        <div class="bg-slate-950/90 border border-white/5 p-3.5 rounded-2xl text-center">
+                            <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-arrow-down text-cyan-400"></i> التحميل
+                            </span>
+                            <span id="res-download" class="text-lg font-black text-white font-mono mt-1 block">-- Mbps</span>
+                        </div>
+                        <div class="bg-slate-950/90 border border-white/5 p-3.5 rounded-2xl text-center">
+                            <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-arrow-up text-emerald-400"></i> الرفع
+                            </span>
+                            <span id="res-upload" class="text-lg font-black text-white font-mono mt-1 block">-- Mbps</span>
+                        </div>
+                        <div class="bg-slate-950/90 border border-white/5 p-3.5 rounded-2xl text-center">
+                            <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-bolt text-amber-400"></i> البنق (Ping)
+                            </span>
+                            <span id="res-ping" class="text-lg font-black text-white font-mono mt-1 block">-- ms</span>
+                        </div>
+                        <div class="bg-slate-950/90 border border-white/5 p-3.5 rounded-2xl text-center">
+                            <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-wave-square text-purple-400"></i> Jitter
+                            </span>
+                            <span id="res-jitter" class="text-lg font-black text-white font-mono mt-1 block">-- ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connection Diagnostics Card -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-network-wired text-emerald-400"></i>
+                            تفاصيل الاتصال والشبكة
+                        </h3>
+                        <div class="space-y-3 text-xs sm:text-sm">
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/85 border border-white/5">
+                                <span class="text-slate-400">نوع الاتصال:</span>
+                                <span id="net-type" class="font-bold text-cyan-400 font-mono">--</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/85 border border-white/5">
+                                <span class="text-slate-400">مزود الخدمة (ISP):</span>
+                                <span id="net-isp" class="font-bold text-emerald-400 font-mono text-left truncate max-w-[160px]">جاري الفحص...</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/85 border border-white/5">
+                                <span class="text-slate-400">عنوان IP العام:</span>
+                                <span id="net-ip" class="font-bold text-purple-400 font-mono">جاري الفحص...</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-950/85 border border-white/5">
+                                <span class="text-slate-400">تقييم الألعاب:</span>
+                                <span id="net-gaming-rating" class="font-bold text-slate-300">بانتظار الاختبار</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="fetchNetworkDetails()" class="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 border border-white/10 font-bold text-xs flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-arrows-rotate"></i> تحديث بيانات الشبكة
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 4. GAMEPAD TESTER (AUTHENTIC PS DUALSENSE & XBOX SERIES) -->
+        <!-- ======================================================== -->
+        <section id="sec-gamepad" class="tab-section space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+                        <span id="gp-header-icon" class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-base transition-colors">
+                            <i class="fa-brands fa-playstation"></i>
+                        </span>
+                        مختبر فحص يد التحكم (PlayStation & Xbox)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">اختر نوع يد التحكم لتغيير الهيكل الأصلي والخلفية بالكامل، ثم اضغط على أي زر في يدك لبدء الفحص.</p>
+                </div>
+
+                <!-- Authentic Platform Switcher -->
+                <div class="flex items-center gap-2 bg-slate-950/90 p-1.5 rounded-2xl border border-white/10 self-start sm:self-auto">
+                    <button onclick="setControllerPlatform('ps')" id="btn-skin-ps" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition">
+                        <i class="fa-brands fa-playstation text-sm"></i> PlayStation
+                    </button>
+                    <button onclick="setControllerPlatform('xbox')" id="btn-skin-xbox" class="px-4 py-2 rounded-xl text-xs font-extrabold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                        <i class="fa-brands fa-xbox text-sm"></i> Xbox
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connection Status Bar -->
+            <div id="gamepad-status-bar" class="glass-card rounded-3xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div id="gp-status-icon" class="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/20 flex items-center justify-center text-lg animate-pulse">
+                        <i class="fa-solid fa-plug-circle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h4 id="gp-name" class="text-sm font-extrabold text-white">في انتظار توصيل يد التحكم...</h4>
+                        <p id="gp-sub" class="text-xs text-slate-400">وصّل اليد عبر الكابل أو البلوتوث واضغط على أي زر لتفعيلها.</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="testGamepadRumble(0.8, 0.0)" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-bold text-xs transition">
+                        اهتزاز خفيف (Weak)
+                    </button>
+                    <button onclick="testGamepadRumble(0.0, 1.0)" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-bold text-xs transition">
+                        اهتزاز قوي (Strong)
+                    </button>
+                    <button id="btn-gp-rumble" onclick="testGamepadRumble(1.0, 1.0)" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-lg">
+                        <i class="fa-solid fa-bolt"></i> اهتزاز مزدوج
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Controller Visualizer & Analog Drift Radar -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Authentic Controller Silhouette Area -->
+                <div class="lg:col-span-2 glass-card rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    
+                    <!-- Triggers Pressure Bars -->
+                    <div dir="ltr" class="w-full max-w-md grid grid-cols-2 gap-6 mb-5 text-xs font-mono">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span id="lbl-l2" class="text-sky-400 font-bold">L2</span>
+                                <span id="val-l2" class="text-slate-400">0%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-white/10">
+                                <div id="bar-l2" class="h-full bg-sky-500 transition-all duration-75" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span id="lbl-r2" class="text-sky-400 font-bold">R2</span>
+                                <span id="val-r2" class="text-slate-400">0%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-white/10">
+                                <div id="bar-r2" class="h-full bg-sky-500 transition-all duration-75" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================================================== -->
+                    <!-- SVG 1: AUTHENTIC PLAYSTATION DUALSENSE CONTROLLER    -->
+                    <!-- ==================================================== -->
+                    <svg id="svg-controller-ps" dir="ltr" viewBox="0 0 540 310" class="w-full max-w-xl drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)] select-none">
+                        <defs>
+                            <linearGradient id="psBodyWhite" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#f1f5f9"/>
+                                <stop offset="65%" stop-color="#cbd5e1"/>
+                                <stop offset="100%" stop-color="#94a3b8"/>
+                            </linearGradient>
+                            <linearGradient id="psCoreBlack" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#1e293b"/>
+                                <stop offset="100%" stop-color="#090d16"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- L1 & R1 Bumpers -->
+                        <path id="ps-btn-4" class="gp-btn" d="M 88 46 Q 125 32 168 42 L 164 56 L 84 58 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+                        <text x="126" y="49" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="bold">L1</text>
+
+                        <path id="ps-btn-5" class="gp-btn" d="M 452 46 Q 415 32 372 42 L 376 56 L 456 58 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+                        <text x="414" y="49" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="bold">R1</text>
+
+                        <!-- DualSense Outer Two-Tone Wing Shell -->
+                        <path d="M 105 54 L 435 54 C 482 54 512 125 496 238 C 488 282 446 286 426 244 L 392 192 L 148 192 L 114 244 C 94 286 52 282 44 238 C 28 125 58 54 105 54 Z" fill="url(#psBodyWhite)" stroke="#64748b" stroke-width="2.5"/>
+
+                        <!-- DualSense Black Lower Trim & Analog Base -->
+                        <path d="M 142 145 L 398 145 L 424 238 C 414 242 404 230 392 192 L 148 192 C 136 230 126 242 116 238 Z" fill="url(#psCoreBlack)"/>
+
+                        <!-- Signature DualSense Touchpad with Blue Lightbar -->
+                        <polygon id="ps-btn-17" class="gp-btn" points="182,56 358,56 346,132 194,132" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
+                        <line x1="184" y1="58" x2="195" y2="130" stroke="#38bdf8" stroke-width="3" opacity="0.85"/>
+                        <line x1="356" y1="58" x2="345" y2="130" stroke="#38bdf8" stroke-width="3" opacity="0.85"/>
+
+                        <!-- Create (Share: 8) & Options (9) -->
+                        <rect id="ps-btn-8" class="gp-btn" x="164" y="68" width="11" height="22" rx="5" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+                        <rect id="ps-btn-9" class="gp-btn" x="365" y="68" width="11" height="22" rx="5" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+
+                        <!-- PS Home Button (16) -->
+                        <circle id="ps-btn-16" class="gp-btn" cx="270" cy="166" r="13" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+                        <text x="270" y="170" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="bold">PS</text>
+
+                        <!-- Segmented PlayStation D-Pad (12, 13, 14, 15) -->
+                        <polygon id="ps-btn-12" class="gp-btn" points="118,86 138,86 138,104 128,112 118,104" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <polygon id="ps-btn-13" class="gp-btn" points="118,148 138,148 138,130 128,122 118,130" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <polygon id="ps-btn-14" class="gp-btn" points="96,107 114,107 122,117 114,127 96,127" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <polygon id="ps-btn-15" class="gp-btn" points="160,107 142,107 134,117 142,127 160,127" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+
+                        <!-- PlayStation Face Buttons: Triangle(3), Circle(1), Cross(0), Square(2) -->
+                        <circle id="ps-btn-3" class="gp-btn" cx="412" cy="86" r="16" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                        <text x="412" y="91" text-anchor="middle" fill="#34d399" font-size="14" font-weight="bold">△</text>
+
+                        <circle id="ps-btn-1" class="gp-btn" cx="445" cy="117" r="16" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                        <text x="445" y="122" text-anchor="middle" fill="#fb7185" font-size="14" font-weight="bold">○</text>
+
+                        <circle id="ps-btn-0" class="gp-btn" cx="412" cy="148" r="16" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                        <text x="412" y="153" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="bold">✕</text>
+
+                        <circle id="ps-btn-2" class="gp-btn" cx="379" cy="117" r="16" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                        <text x="379" y="122" text-anchor="middle" fill="#e879f9" font-size="14" font-weight="bold">□</text>
+
+                        <!-- Symmetrical Bottom Analog Sticks (L3 = 10, R3 = 11) -->
+                        <circle cx="205" cy="176" r="30" fill="#050811" stroke="#334155" stroke-width="2.5"/>
+                        <circle id="ps-stick-left" cx="205" cy="176" r="19" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+
+                        <circle cx="335" cy="176" r="30" fill="#050811" stroke="#334155" stroke-width="2.5"/>
+                        <circle id="ps-stick-right" cx="335" cy="176" r="19" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+                    </svg>
+
+                    <!-- ==================================================== -->
+                    <!-- SVG 2: AUTHENTIC XBOX SERIES X|S CONTROLLER          -->
+                    <!-- ==================================================== -->
+                    <svg id="svg-controller-xbox" dir="ltr" viewBox="0 0 540 310" class="w-full max-w-xl drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)] select-none hidden">
+                        <defs>
+                            <linearGradient id="xboxCarbon" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#272e3b"/>
+                                <stop offset="50%" stop-color="#141923"/>
+                                <stop offset="100%" stop-color="#090d14"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- LB (4) & RB (5) Wide Curved Bumpers -->
+                        <path id="xbox-btn-4" class="gp-btn" d="M 85 52 Q 145 28 215 44 L 210 60 L 82 66 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+                        <text x="145" y="51" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="bold">LB</text>
+
+                        <path id="xbox-btn-5" class="gp-btn" d="M 455 52 Q 395 28 325 44 L 330 60 L 458 66 Z" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+                        <text x="395" y="51" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="bold">RB</text>
+
+                        <!-- Xbox Series X Ergonomic Broad Silhouette -->
+                        <path d="M 110 56 C 180 44 360 44 430 56 C 485 68 512 145 492 246 C 482 286 438 286 416 244 L 384 198 L 156 198 L 124 244 C 102 286 58 286 48 246 C 28 145 55 68 110 56 Z" fill="url(#xboxCarbon)" stroke="#334155" stroke-width="3"/>
+
+                        <!-- Iconic Glowing Xbox Nexus Button (16) -->
+                        <circle id="xbox-btn-16" class="gp-btn" cx="270" cy="82" r="19" fill="#0f172a" stroke="#22c55e" stroke-width="3"/>
+                        <path d="M 261 73 L 279 91 M 279 73 L 261 91" stroke="#22c55e" stroke-width="3.2" stroke-linecap="round"/>
+
+                        <!-- View (8), Share (17), Menu (9) -->
+                        <circle id="xbox-btn-8" class="gp-btn" cx="226" cy="118" r="10" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+                        <rect id="xbox-btn-17" class="gp-btn" x="262" y="114" width="16" height="11" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+                        <circle id="xbox-btn-9" class="gp-btn" cx="314" cy="118" r="10" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+
+                        <!-- Asymmetrical TOP-LEFT Analog Stick (L3 = 10) -->
+                        <circle cx="136" cy="114" r="31" fill="#050811" stroke="#334155" stroke-width="2.5"/>
+                        <circle id="xbox-stick-left" cx="136" cy="114" r="20" fill="#1e293b" stroke="#22c55e" stroke-width="2.5"/>
+
+                        <!-- Xbox Hybrid Dish D-Pad (Bottom-Left: 12, 13, 14, 15) -->
+                        <circle cx="195" cy="172" r="30" fill="#090d16" stroke="#334155" stroke-width="2"/>
+                        <rect id="xbox-btn-12" class="gp-btn" x="187" y="146" width="16" height="18" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <rect id="xbox-btn-13" class="gp-btn" x="187" y="180" width="16" height="18" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <rect id="xbox-btn-14" class="gp-btn" x="169" y="164" width="18" height="16" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                        <rect id="xbox-btn-15" class="gp-btn" x="203" y="164" width="18" height="16" rx="3" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+
+                        <!-- Xbox Colored Face Buttons: Y(3), B(1), A(0), X(2) -->
+                        <circle id="xbox-btn-3" class="gp-btn" cx="404" cy="84" r="16" fill="#0f172a" stroke="#eab308" stroke-width="2.5"/>
+                        <text x="404" y="89" text-anchor="middle" fill="#facc15" font-size="14" font-weight="bold">Y</text>
+
+                        <circle id="xbox-btn-1" class="gp-btn" cx="437" cy="115" r="16" fill="#0f172a" stroke="#ef4444" stroke-width="2.5"/>
+                        <text x="437" y="120" text-anchor="middle" fill="#f87171" font-size="14" font-weight="bold">B</text>
+
+                        <circle id="xbox-btn-0" class="gp-btn" cx="404" cy="146" r="16" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>
+                        <text x="404" y="151" text-anchor="middle" fill="#4ade80" font-size="14" font-weight="bold">A</text>
+
+                        <circle id="xbox-btn-2" class="gp-btn" cx="371" cy="115" r="16" fill="#0f172a" stroke="#3b82f6" stroke-width="2.5"/>
+                        <text x="371" y="120" text-anchor="middle" fill="#60a5fa" font-size="14" font-weight="bold">X</text>
+
+                        <!-- Bottom-Right Analog Stick (R3 = 11) -->
+                        <circle cx="342" cy="172" r="31" fill="#050811" stroke="#334155" stroke-width="2.5"/>
+                        <circle id="xbox-stick-right" cx="342" cy="172" r="20" fill="#1e293b" stroke="#22c55e" stroke-width="2.5"/>
+                    </svg>
+
+                </div>
+
+                <!-- Analog Drift Radar & Active Inputs -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center gap-2 mb-2">
+                            <i class="fa-solid fa-crosshairs text-cyan-400"></i>
+                            فحص انحراف العصي (Drift)
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">
+                            اترك عصي التحكم في وضع السكون؛ القيمة المثالية تكون قريبة من <span class="text-emerald-400 font-mono font-bold">0.00</span>.
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Left Stick Radar -->
+                            <div class="bg-slate-950/90 border border-white/10 rounded-2xl p-3 text-center">
+                                <span id="radar-lbl-l" class="text-xs font-bold text-sky-400 block mb-2">العصا اليسرى (L)</span>
+                                <div class="w-24 h-24 mx-auto rounded-full border border-white/15 relative bg-slate-900/70 flex items-center justify-center">
+                                    <div class="w-full h-[1px] bg-white/10 absolute"></div>
+                                    <div class="h-full w-[1px] bg-white/10 absolute"></div>
+                                    <div id="radar-dot-left" class="w-3.5 h-3.5 rounded-full bg-sky-400 shadow-md absolute transition-transform duration-75"></div>
+                                </div>
+                                <div class="mt-2 text-[10px] font-mono text-slate-300">
+                                    X: <span id="axis-lx">0.0000</span><br>Y: <span id="axis-ly">0.0000</span>
+                                    <span class="block text-amber-400 mt-0.5">انحراف: <span id="drift-l-pct">0.0%</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Right Stick Radar -->
+                            <div class="bg-slate-950/90 border border-white/10 rounded-2xl p-3 text-center">
+                                <span id="radar-lbl-r" class="text-xs font-bold text-sky-400 block mb-2">العصا اليمنى (R)</span>
+                                <div class="w-24 h-24 mx-auto rounded-full border border-white/15 relative bg-slate-900/70 flex items-center justify-center">
+                                    <div class="w-full h-[1px] bg-white/10 absolute"></div>
+                                    <div class="h-full w-[1px] bg-white/10 absolute"></div>
+                                    <div id="radar-dot-right" class="w-3.5 h-3.5 rounded-full bg-sky-400 shadow-md absolute transition-transform duration-75"></div>
+                                </div>
+                                <div class="mt-2 text-[10px] font-mono text-slate-300">
+                                    X: <span id="axis-rx">0.0000</span><br>Y: <span id="axis-ry">0.0000</span>
+                                    <span class="block text-amber-400 mt-0.5">انحراف: <span id="drift-r-pct">0.0%</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/90 border border-white/10 rounded-2xl p-3.5">
+                        <span class="text-[11px] text-slate-400 block mb-1">الأزرار المضغوطة حالياً:</span>
+                        <span id="gp-active-buttons-list" class="text-xs font-mono font-bold text-emerald-400">لا يوجد</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 5. REACTION TIME TEST SECTION (قياس سرعة رد الفعل)        -->
+        <!-- ======================================================== -->
+        <section id="sec-reaction" class="tab-section space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-bolt"></i>
+                        </span>
+                        مختبر قياس سرعة رد الفعل (Reaction Time)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">اختبر سرعة استجابتك العصبية بدقة أجزاء من الألف من الثانية (ms) باستخدام الفأرة، اللمس أو زر المسافة (Space).</p>
+                </div>
+                <button onclick="resetReactionStats()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 border border-white/10 transition self-start sm:self-auto">
+                    <i class="fa-solid fa-rotate-left ml-1"></i> تصفير الإحصائيات
+                </button>
+            </div>
+
+            <!-- Interactive Arena Box -->
+            <div id="reaction-arena" onmousedown="handleReactionTrigger(event)" ontouchstart="handleReactionTrigger(event)" class="rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-150 border-2 border-amber-500/30 bg-gradient-to-br from-slate-900/90 via-amber-950/30 to-slate-950/90 shadow-2xl relative overflow-hidden">
+                <div id="reaction-icon-wrap" class="w-20 h-20 rounded-3xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-4xl mb-5 shadow-lg transition-transform duration-200">
+                    <i id="reaction-icon" class="fa-solid fa-bolt"></i>
+                </div>
+                <h3 id="reaction-main-title" class="text-2xl sm:text-4xl font-black text-white mb-2 tracking-tight">
+                    اضغط للبدء في اختبار رد الفعل
+                </h3>
+                <p id="reaction-sub-desc" class="text-xs sm:text-base text-slate-300 max-w-md leading-relaxed">
+                    عندما يتحول لون الشاشة من <span class="text-rose-400 font-bold">الأحمر</span> إلى <span class="text-emerald-400 font-bold">الأخضر</span>، اضغط بأقصى سرعة ممكنة!
+                </p>
+                <span class="mt-6 text-[11px] font-mono text-slate-400 bg-black/40 px-3.5 py-1.5 rounded-full border border-white/10">
+                    يدعم النقر بالفأرة، اللمس المباشر، أو مفتاح Space
+                </span>
+            </div>
+
+            <!-- Stats & History Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="text-[11px] text-slate-400 block">آخر محاولة</span>
+                    <span id="rt-last" class="text-2xl font-black text-white font-mono mt-1 block">-- ms</span>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="text-[11px] text-slate-400 block">أفضل رقم قياسي (Best)</span>
+                    <span id="rt-best" class="text-2xl font-black text-emerald-400 font-mono mt-1 block">-- ms</span>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="text-[11px] text-slate-400 block">المتوسط (Average)</span>
+                    <span id="rt-avg" class="text-2xl font-black text-cyan-400 font-mono mt-1 block">-- ms</span>
+                </div>
+                <div class="glass-card rounded-2xl p-4 text-center">
+                    <span class="text-[11px] text-slate-400 block">التصنيف الاحترافي</span>
+                    <span id="rt-rank" class="text-base font-black text-amber-400 mt-1.5 block">بانتظار المحاولة</span>
+                </div>
+            </div>
+
+            <!-- Recent Attempts Log -->
+            <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <span class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> سجل المحاولات الأخيرة:
+                </span>
+                <div id="rt-history-list" class="flex flex-wrap items-center gap-2 text-xs font-mono">
+                    <span class="text-slate-500">لا توجد محاولات مسجلة بعد</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- COMPLETE INTERACTIVE JAVASCRIPT ENGINE                       -->
+    <!-- ============================================================ -->
+    <script>
+        let currentTab = 'phone';
+        let currentControllerPlatform = 'ps';
+
+        // ==========================================
+        // 0. DYNAMIC THEMATIC BACKDROPS & NAVIGATION
+        // ==========================================
+        function applyDynamicBackdrop() {
+            const root = document.documentElement;
+            const patternLayer = document.getElementById('theme-pattern-layer');
+            const brandBox = document.getElementById('brand-icon-box');
+            const brandAccent = document.getElementById('brand-accent');
+
+            const makeSvgBg = (svgContent, w = 220, h = 220) => {
+                const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${svgContent}</svg>`;
+                return `url("data:image/svg+xml,${encodeURIComponent(fullSvg)}")`;
+            };
+
+            if (currentTab === 'phone') {
+                root.style.setProperty('--ambient-1', 'rgba(6, 182, 212, 0.22)');
+                root.style.setProperty('--ambient-2', 'rgba(59, 130, 246, 0.16)');
+                root.style.setProperty('--ambient-3', 'rgba(14, 165, 233, 0.12)');
+                root.style.setProperty('--grid-color', 'rgba(6, 182, 212, 0.05)');
+                brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg transition-all duration-500';
+                brandAccent.className = 'text-cyan-400 transition-colors duration-500';
+                patternLayer.style.backgroundImage = makeSvgBg(`
+                    <rect x="40" y="30" width="44" height="78" rx="9" fill="none" stroke="#06b6d4" stroke-opacity="0.14" stroke-width="1.5"/>
+                    <circle cx="62" cy="98" r="2.5" fill="#06b6d4" fill-opacity="0.18"/>
+                    <circle cx="155" cy="145" r="22" fill="none" stroke="#38bdf8" stroke-opacity="0.12" stroke-width="1.2"/>
+                    <circle cx="155" cy="145" r="36" fill="none" stroke="#38bdf8" stroke-opacity="0.08" stroke-width="1"/>
+                `);
+            } else if (currentTab === 'pc') {
+                root.style.setProperty('--ambient-1', 'rgba(168, 85, 247, 0.22)');
+                root.style.setProperty('--ambient-2', 'rgba(6, 182, 212, 0.16)');
+                root.style.setProperty('--ambient-3', 'rgba(99, 102, 241, 0.14)');
+                root.style.setProperty('--grid-color', 'rgba(168, 85, 247, 0.05)');
+                brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-500 flex items-center justify-center shadow-lg transition-all duration-500';
+                brandAccent.className = 'text-purple-400 transition-colors duration-500';
+                patternLayer.style.backgroundImage = makeSvgBg(`
+                    <rect x="35" y="35" width="46" height="46" rx="6" fill="none" stroke="#a855f7" stroke-opacity="0.14" stroke-width="1.5"/>
+                    <rect x="46" y="46" width="24" height="24" rx="3" fill="none" stroke="#06b6d4" stroke-opacity="0.15" stroke-width="1.2"/>
+                    <path d="M 120 150 L 155 150 L 175 130 L 200 130" fill="none" stroke="#a855f7" stroke-opacity="0.12" stroke-width="1.5"/>
+                    <circle cx="200" cy="130" r="3" fill="#06b6d4" fill-opacity="0.2"/>
+                `);
+            } else if (currentTab === 'internet') {
+                root.style.setProperty('--ambient-1', 'rgba(16, 185, 129, 0.22)');
+                root.style.setProperty('--ambient-2', 'rgba(6, 182, 212, 0.18)');
+                root.style.setProperty('--ambient-3', 'rgba(20, 184, 166, 0.12)');
+                root.style.setProperty('--grid-color', 'rgba(16, 185, 129, 0.05)');
+                brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg transition-all duration-500';
+                brandAccent.className = 'text-emerald-400 transition-colors duration-500';
+                patternLayer.style.backgroundImage = makeSvgBg(`
+                    <circle cx="65" cy="65" r="28" fill="none" stroke="#10b981" stroke-opacity="0.13" stroke-width="1.3"/>
+                    <ellipse cx="65" cy="65" rx="12" ry="28" fill="none" stroke="#10b981" stroke-opacity="0.12" stroke-width="1.1"/>
+                    <line x1="37" y1="65" x2="93" y2="65" stroke="#10b981" stroke-opacity="0.12" stroke-width="1.1"/>
+                    <path d="M 135 160 Q 165 125 195 160" fill="none" stroke="#06b6d4" stroke-opacity="0.15" stroke-width="1.5"/>
+                    <path d="M 145 170 Q 165 145 185 170" fill="none" stroke="#10b981" stroke-opacity="0.15" stroke-width="1.5"/>
+                `);
+            } else if (currentTab === 'gamepad') {
+                if (currentControllerPlatform === 'ps') {
+                    root.style.setProperty('--ambient-1', 'rgba(37, 99, 235, 0.28)');
+                    root.style.setProperty('--ambient-2', 'rgba(56, 189, 248, 0.20)');
+                    root.style.setProperty('--ambient-3', 'rgba(29, 78, 216, 0.16)');
+                    root.style.setProperty('--grid-color', 'rgba(56, 189, 248, 0.055)');
+                    brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center shadow-lg transition-all duration-500';
+                    brandAccent.className = 'text-sky-400 transition-colors duration-500';
+                    patternLayer.style.backgroundImage = makeSvgBg(`
+                        <polygon points="45,25 62,55 28,55" fill="none" stroke="#38bdf8" stroke-opacity="0.18" stroke-width="2"/>
+                        <circle cx="155" cy="42" r="15" fill="none" stroke="#fb7185" stroke-opacity="0.18" stroke-width="2"/>
+                        <path d="M 32 142 L 58 168 M 58 142 L 32 168" stroke="#60a5fa" stroke-opacity="0.2" stroke-width="2.2" stroke-linecap="round"/>
+                        <rect x="140" y="140" width="28" height="28" rx="3" fill="none" stroke="#e879f9" stroke-opacity="0.18" stroke-width="2"/>
+                    `, 210, 210);
+                } else {
+                    root.style.setProperty('--ambient-1', 'rgba(16, 185, 129, 0.28)');
+                    root.style.setProperty('--ambient-2', 'rgba(34, 197, 94, 0.20)');
+                    root.style.setProperty('--ambient-3', 'rgba(5, 150, 105, 0.16)');
+                    root.style.setProperty('--grid-color', 'rgba(34, 197, 94, 0.055)');
+                    brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center shadow-lg transition-all duration-500';
+                    brandAccent.className = 'text-emerald-400 transition-colors duration-500';
+                    patternLayer.style.backgroundImage = makeSvgBg(`
+                        <circle cx="55" cy="55" r="22" fill="none" stroke="#22c55e" stroke-opacity="0.18" stroke-width="2"/>
+                        <path d="M 43 43 L 67 67 M 67 43 L 43 67" stroke="#22c55e" stroke-opacity="0.22" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M 130 145 C 145 135 175 135 190 145 C 200 155 202 178 192 192 C 185 198 176 194 170 184 L 150 184 C 144 194 135 198 128 192 C 118 178 120 155 130 145 Z" fill="none" stroke="#4ade80" stroke-opacity="0.14" stroke-width="1.8"/>
+                    `, 220, 220);
+                }
+            } else if (currentTab === 'reaction') {
+                root.style.setProperty('--ambient-1', 'rgba(245, 158, 11, 0.24)');
+                root.style.setProperty('--ambient-2', 'rgba(244, 63, 94, 0.16)');
+                root.style.setProperty('--ambient-3', 'rgba(16, 185, 129, 0.14)');
+                root.style.setProperty('--grid-color', 'rgba(245, 158, 11, 0.05)');
+                brandBox.className = 'w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg transition-all duration-500';
+                brandAccent.className = 'text-amber-400 transition-colors duration-500';
+                patternLayer.style.backgroundImage = makeSvgBg(`
+                    <polygon points="75,20 45,75 72,75 58,125 105,62 76,62" fill="none" stroke="#f59e0b" stroke-opacity="0.18" stroke-width="1.8"/>
+                    <circle cx="165" cy="150" r="24" fill="none" stroke="#fb7185" stroke-opacity="0.14" stroke-width="1.5"/>
+                    <circle cx="165" cy="150" r="10" fill="none" stroke="#f59e0b" stroke-opacity="0.2" stroke-width="1.5"/>
+                `, 220, 220);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                info: 'bg-slate-900/95 border-cyan-500/50 text-cyan-300',
+                success: 'bg-slate-900/95 border-emerald-500/50 text-emerald-300',
+                error: 'bg-slate-900/95 border-rose-500/50 text-rose-300',
+                warn: 'bg-slate-900/95 border-amber-500/50 text-amber-300'
+            };
+            toast.className = `px-4 py-3 rounded-2xl border shadow-2xl text-xs font-bold backdrop-blur-xl transition-all duration-300 ${colors[type] || colors.info}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info ml-1.5"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3400);
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            const targetSec = document.getElementById(`sec-${tabId}`);
+            if (targetSec) targetSec.classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-300 hover:text-white hover:bg-white/5 transition-all';
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            const activeGradients = {
+                phone: 'from-cyan-500 to-blue-600',
+                pc: 'from-purple-600 to-cyan-500',
+                internet: 'from-emerald-500 to-cyan-600',
+                gamepad: currentControllerPlatform === 'ps' ? 'from-blue-600 to-sky-500' : 'from-emerald-600 to-green-500',
+                reaction: 'from-amber-500 to-orange-600'
+            };
+            if (activeBtn) {
+                activeBtn.className = `nav-btn active flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-gradient-to-r ${activeGradients[tabId]} text-white shadow-lg`;
+            }
+
+            applyDynamicBackdrop();
+            if (tabId === 'internet') fetchNetworkDetails();
+        }
+
+        // ==========================================
+        // 1. FULLSCREEN PIXEL & MULTI-TOUCH TEST
+        // ==========================================
+        const pixelColors = ['#ef4444', '#22c55e', '#3b82f6', '#ffffff', '#000000', '#eab308'];
+        let currentPixelIdx = 0;
+        let fsMode = null;
+
+        function startPixelTest() {
+            fsMode = 'pixel';
+            currentPixelIdx = 0;
+            const overlay = document.getElementById('fullscreen-overlay');
+            const canvas = document.getElementById('fullscreen-touch-canvas');
+            const touchHud = document.getElementById('fs-touch-count');
+
+            canvas.classList.add('hidden');
+            touchHud.classList.add('hidden');
+            document.getElementById('fs-title').textContent = 'فحص البكسلات الميتة والألوان';
+            document.getElementById('fs-desc').textContent = 'انقر في أي مكان لتغيير اللون (أحمر، أخضر، أزرق، أبيض، أسود، أصفر)';
+
+            overlay.style.backgroundColor = pixelColors[0];
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+
+            if (overlay.requestFullscreen) overlay.requestFullscreen().catch(() => {});
+        }
+
+        function startTouchTest() {
+            fsMode = 'touch';
+            const overlay = document.getElementById('fullscreen-overlay');
+            const canvas = document.getElementById('fullscreen-touch-canvas');
+            const touchHud = document.getElementById('fs-touch-count');
+
+            overlay.style.backgroundColor = '#050811';
+            canvas.classList.remove('hidden');
+            touchHud.classList.remove('hidden');
+            document.getElementById('fs-title').textContent = 'اختبار اللمس المتعدد (Multi-Touch)';
+            document.getElementById('fs-desc').textContent = 'المس الشاشة بعدة أصابع في نفس الوقت للتحقق من استجابة جميع نقاط اللمس.';
+
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+
+            if (overlay.requestFullscreen) overlay.requestFullscreen().catch(() => {});
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        document.getElementById('fullscreen-overlay').addEventListener('click', () => {
+            if (fsMode === 'pixel') {
+                currentPixelIdx = (currentPixelIdx + 1) % pixelColors.length;
+                document.getElementById('fullscreen-overlay').style.backgroundColor = pixelColors[currentPixelIdx];
+            }
+        });
+
+        const touchCanvas = document.getElementById('fullscreen-touch-canvas');
+        const touchColors = ['#06b6d4', '#8b5cf6', '#10b981', '#f43f5e', '#f59e0b'];
+
+        function handleCanvasTouch(e) {
+            if (fsMode !== 'touch') return;
+            e.preventDefault();
+            const ctx = touchCanvas.getContext('2d');
+            const touches = e.touches;
+            document.getElementById('fs-touch-count').textContent = `نقاط اللمس النشطة: ${touches.length}`;
+
+            for (let i = 0; i < touches.length; i++) {
+                const t = touches[i];
+                ctx.beginPath();
+                ctx.arc(t.clientX, t.clientY, 22, 0, Math.PI * 2);
+                ctx.fillStyle = touchColors[i % touchColors.length];
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+            }
+        }
+
+        touchCanvas.addEventListener('touchstart', handleCanvasTouch, { passive: false });
+        touchCanvas.addEventListener('touchmove', handleCanvasTouch, { passive: false });
+        touchCanvas.addEventListener('touchend', (e) => {
+            document.getElementById('fs-touch-count').textContent = `نقاط اللمس النشطة: ${e.touches.length}`;
+        });
+
+        let isMouseDrawing = false;
+        touchCanvas.addEventListener('mousedown', () => isMouseDrawing = true);
+        touchCanvas.addEventListener('mouseup', () => isMouseDrawing = false);
+        touchCanvas.addEventListener('mousemove', (e) => {
+            if (!isMouseDrawing || fsMode !== 'touch') return;
+            const ctx = touchCanvas.getContext('2d');
+            ctx.beginPath();
+            ctx.arc(e.clientX, e.clientY, 14, 0, Math.PI * 2);
+            ctx.fillStyle = '#06b6d4';
+            ctx.fill();
+        });
+
+        function exitFullscreenTest(e) {
+            if (e) e.stopPropagation();
+            const overlay = document.getElementById('fullscreen-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            fsMode = null;
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        }
+
+        // ==========================================
+        // 2. AUDIO, MICROPHONE & VIBRATION
+        // ==========================================
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playStereoTone(panValue, freq = 440) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const panner = ctx.createStereoPanner();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                panner.pan.setValueAtTime(panValue, ctx.currentTime);
+
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.1);
+
+                osc.connect(panner);
+                panner.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 1.1);
+                const label = panValue < 0 ? 'السماعة اليسرى (Left)' : panValue > 0 ? 'السماعة اليمنى (Right)' : 'كلتا السماعتين (Stereo)';
+                showToast(`تشغيل تردد ${freq}Hz في ${label}`, 'success');
+            } catch (err) {
+                showToast('تعذر تشغيل الصوت في المتصفح', 'error');
+            }
+        }
+
+        function playFrequencySweep() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 2.0);
+                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.1);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 2.1);
+                showToast('جاري اختبار ترددات السماعة (150Hz - 2400Hz)', 'info');
+            } catch (err) {
+                showToast('تعذر تشغيل اختبار الترددات', 'error');
+            }
+        }
+
+        function testVibration(pattern = [250, 100, 250]) {
+            if ('vibrate' in navigator) {
+                const ok = navigator.vibrate(pattern);
+                if (ok) {
+                    showToast('تم إرسال نبضة اهتزاز حقيقية إلى الهاتف!', 'success');
+                } else {
+                    showToast('المتصفح يدعم الاهتزاز لكن الجهاز الحالي لا يملك محرك اهتزاز.', 'warn');
+                }
+            } else {
+                showToast('متصفحك أو جهازك لا يدعم ميزة الاهتزاز البرمجي.', 'warn');
+            }
+        }
+
+        const micStreams = { phone: null, pc: null };
+        const micAnimIds = { phone: null, pc: null };
+
+        async function toggleMicTest(target) {
+            const btn = document.getElementById(`btn-${target}-mic`);
+            const canvas = document.getElementById(`${target}-mic-canvas`);
+
+            if (micStreams[target]) {
+                micStreams[target].getTracks().forEach(t => t.stop());
+                micStreams[target] = null;
+                cancelAnimationFrame(micAnimIds[target]);
+                btn.innerHTML = `<i class="fa-solid fa-microphone"></i> ${target === 'phone' ? 'تشغيل الفحص' : 'الميكروفون'}`;
+                showToast('تم إيقاف فحص الميكروفون', 'info');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micStreams[target] = stream;
+                btn.innerHTML = `<i class="fa-solid fa-stop"></i> إيقاف`;
+                showToast('الميكروفون نشط! تحدث الآن لمشاهدة الموجات.', 'success');
+
+                const ctx = getAudioContext();
+                const source = ctx.createMediaStreamSource(stream);
+                const analyser = ctx.createAnalyser();
+                analyser.fftSize = 128;
+                source.connect(analyser);
+
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                const canvasCtx = canvas.getContext('2d');
+
+                function draw() {
+                    if (!micStreams[target]) return;
+                    micAnimIds[target] = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    const barWidth = (canvas.width / bufferLength) * 1.8;
+                    let x = 0;
+                    let sum = 0;
+
+                    for (let i = 0; i < bufferLength; i++) {
+                        const barHeight = (dataArray[i] / 255) * canvas.height;
+                        sum += dataArray[i];
+                        canvasCtx.fillStyle = target === 'phone' ? '#a855f7' : '#06b6d4';
+                        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+                        x += barWidth;
+                    }
+
+                    if (target === 'phone') {
+                        const avg = Math.round((sum / bufferLength / 255) * 100);
+                        document.getElementById('phone-mic-db').textContent = `${avg} dB`;
+                    }
+                }
+                draw();
+            } catch (err) {
+                showToast('يرجى السماح بصلاحية الوصول للميكروفون.', 'error');
+            }
+        }
+
+        async function recordAndPlayAudio() {
+            const btn = document.getElementById('btn-phone-rec');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(t => t.stop());
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                    btn.innerHTML = `<i class="fa-solid fa-circle-dot text-rose-500"></i> سجل واسمع (5ث)`;
+                    btn.disabled = false;
+                    showToast('يتم الآن تشغيل التسجيل الصوتي الحقيقي الخاص بك...', 'success');
+                };
+
+                mediaRecorder.start();
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التسجيل (5ث)...`;
+
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+                }, 5000);
+            } catch (err) {
+                showToast('تعذر الوصول للميكروفون للتسجيل.', 'error');
+            }
+        }
+
+        // ==========================================
+        // 3. CAMERA PREVIEW & SNAPSHOT
+        // ==========================================
+        const camStreams = { phone: null, pc: null };
+
+        async function toggleCamera(target, facingMode) {
+            const video = document.getElementById(`${target}-cam-video`);
+            const placeholder = document.getElementById(`${target}-cam-placeholder`);
+            const snapImg = document.getElementById(`${target}-cam-snap`);
+            if (snapImg) snapImg.classList.add('hidden');
+
+            if (camStreams[target]) {
+                camStreams[target].getTracks().forEach(t => t.stop());
+                camStreams[target] = null;
+                video.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                if (target === 'pc') return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+                camStreams[target] = stream;
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                showToast('تم تشغيل الكاميرا بنجاح', 'success');
+            } catch (err) {
+                showToast('تعذر تشغيل الكاميرا أو تم رفض الصلاحية.', 'error');
+            }
+        }
+
+        function captureCameraSnapshot(target) {
+            const video = document.getElementById(`${target}-cam-video`);
+            const snapImg = document.getElementById(`${target}-cam-snap`);
+            if (!camStreams[target] || video.classList.contains('hidden')) {
+                showToast('شغّل الكاميرا أولاً لالتقاط صورة!', 'warn');
+                return;
+            }
+            const c = document.createElement('canvas');
+            c.width = video.videoWidth || 640;
+            c.height = video.videoHeight || 480;
+            c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+            snapImg.src = c.toDataURL('image/png');
+            snapImg.classList.remove('hidden');
+            showToast('تم التقاط الصورة من الكاميرا بنجاح!', 'success');
+        }
+
+        // ==========================================
+        // 4. SENSORS, BUBBLE LEVEL & BATTERY
+        // ==========================================
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                function updateBat() {
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? '⚡ يشحن' : 'بطارية';
+                    document.getElementById('battery-badge').innerHTML = `<i class="fa-solid fa-battery-three-quarters"></i> ${level}% (${charging})`;
+                    const timeSub = document.getElementById('battery-time-sub');
+                    if (battery.charging && battery.chargingTime !== Infinity) {
+                        timeSub.textContent = `الوقت المتبقي لاكتمال الشحن: ~${Math.round(battery.chargingTime / 60)} دقيقة`;
+                    } else if (!battery.charging && battery.dischargingTime !== Infinity) {
+                        timeSub.textContent = `الوقت المتبقي للتفريغ: ~${Math.round(battery.dischargingTime / 60)} دقيقة`;
+                    }
+                }
+                updateBat();
+                battery.addEventListener('levelchange', updateBat);
+                battery.addEventListener('chargingchange', updateBat);
+            });
+        }
+
+        function handleOrientation(event) {
+            const alpha = event.alpha || 0;
+            const beta = event.beta || 0;
+            const gamma = event.gamma || 0;
+            document.getElementById('gyro-alpha').textContent = `${Math.round(alpha)}°`;
+            document.getElementById('gyro-beta').textContent = `${Math.round(beta)}°`;
+            document.getElementById('gyro-gamma').textContent = `${Math.round(gamma)}°`;
+
+            const bubble = document.getElementById('gyro-bubble');
+            if (bubble) {
+                const bx = Math.max(-22, Math.min(22, gamma * 0.5));
+                const by = Math.max(-22, Math.min(22, beta * 0.5));
+                bubble.style.transform = `translate(${bx}px, ${by}px)`;
+            }
+        }
+
+        function enableMotionSensors() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(state => {
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation);
+                        showToast('تم تفعيل مستشعر الجيروسكوب!', 'success');
+                    }
+                }).catch(() => showToast('تم رفض إذن المستشعرات', 'error'));
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+                showToast('تم تفعيل مستشعرات الحركة', 'info');
+            }
+        }
+        window.addEventListener('deviceorientation', handleOrientation);
+
+        // ==========================================
+        // 5. MECHANICAL KEYBOARD, MOUSE & BLUETOOTH
+        // ==========================================
+        let keyHistoryList = [];
+
+        function setKeyboardRGB(mode) {
+            const kb = document.getElementById('mech-keyboard-body');
+            kb.classList.remove('rgb-cyan', 'rgb-purple', 'rgb-emerald');
+            kb.classList.add(mode);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (currentTab === 'reaction' && e.code === 'Space' && !e.repeat) {
+                e.preventDefault();
+                handleReactionTrigger();
+            }
+            const phoneKeyEl = document.getElementById('last-phone-key');
+            if (phoneKeyEl) phoneKeyEl.textContent = `${e.key} (${e.code})`;
+
+            if (e.key === 'AudioVolumeUp' || e.key === 'ArrowUp') {
+                const upEl = document.getElementById('ind-vol-up');
+                if (upEl) upEl.classList.add('border-amber-400', 'text-amber-400');
+            }
+            if (e.key === 'AudioVolumeDown' || e.key === 'ArrowDown') {
+                const downEl = document.getElementById('ind-vol-down');
+                if (downEl) downEl.classList.add('border-amber-400', 'text-amber-400');
+            }
+
+            const displayKey = e.key === ' ' ? 'Space' : e.key;
+            document.getElementById('kb-last-key').textContent = displayKey;
+            document.getElementById('kb-last-code').textContent = e.code;
+            document.getElementById('kb-last-keycode').textContent = e.keyCode || e.which;
+
+            keyHistoryList.unshift(displayKey);
+            if (keyHistoryList.length > 14) keyHistoryList.pop();
+            const strip = document.getElementById('kb-history-strip');
+            strip.innerHTML = keyHistoryList.map((k, idx) =>
+                `<span class="px-2 py-0.5 rounded ${idx === 0 ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 font-bold' : 'bg-white/5 text-slate-400'}">${k}</span>`
+            ).join('');
+
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                document.getElementById('led-caps').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]"></span> CAPS`;
+            } else {
+                document.getElementById('led-caps').innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-700"></span> CAPS`;
+            }
+
+            if (e.getModifierState && e.getModifierState('NumLock')) {
+                document.getElementById('led-num').innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]"></span> NUM`;
+            } else {
+                document.getElementById('led-num').innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-700"></span> NUM`;
+            }
+
+            const keyEl = document.querySelector(`.keycap[data-code="${e.code}"]`);
+            if (keyEl) {
+                if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'F1', 'F3', 'F5', 'F11', 'F12'].includes(e.code)) {
+                    e.preventDefault();
+                }
+                keyEl.classList.add('active', 'tested');
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const keyEl = document.querySelector(`.keycap[data-code="${e.code}"]`);
+            if (keyEl) keyEl.classList.remove('active');
+        });
+
+        function resetKeyboardTest() {
+            document.querySelectorAll('.keycap').forEach(k => k.classList.remove('active', 'tested'));
+            document.getElementById('kb-last-key').textContent = '--';
+            document.getElementById('kb-last-code').textContent = '--';
+            document.getElementById('kb-last-keycode').textContent = '--';
+            keyHistoryList = [];
+            document.getElementById('kb-history-strip').innerHTML = '<span class="text-slate-600">Press any key to start testing...</span>';
+        }
+
+        const mouseZone = document.getElementById('mouse-test-zone');
+        const mouseTrailCanvas = document.getElementById('mouse-trail-canvas');
+        let totalMouseClicks = 0;
+        let mouseMoveEvents = 0;
+        let lastMouseHzCheck = performance.now();
+        let clickTimestamps = [];
+        let lastLeftClickTime = 0;
+        let scrollAccumulator = 0;
+        let trailPoints = [];
+
+        const mouseBtnNames = {
+            0: 'يسار (Left)',
+            1: 'وسط (Wheel)',
+            2: 'يمين (Right)',
+            3: 'جانبي خلفي (Back)',
+            4: 'جانبي أمامي (Forward)'
+        };
+
+        mouseZone.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            e.preventDefault();
+            totalMouseClicks++;
+            document.getElementById('mouse-clicks-count').textContent = totalMouseClicks;
+            document.getElementById('mouse-active-btn').textContent = mouseBtnNames[e.button] || `Btn ${e.button}`;
+
+            // Calculate CPS (Clicks Per Second)
+            const now = performance.now();
+            clickTimestamps.push(now);
+            clickTimestamps = clickTimestamps.filter(t => now - t <= 1000);
+            document.getElementById('mouse-cps').textContent = `${clickTimestamps.length} CPS`;
+
+            // Detect unintended fast double-click (< 85ms)
+            if (e.button === 0) {
+                const diff = now - lastLeftClickTime;
+                const dblBadge = document.getElementById('mouse-double-badge');
+                if (lastLeftClickTime > 0 && diff < 85) {
+                    dblBadge.classList.remove('hidden');
+                    dblBadge.textContent = `⚠ نقر مزدوج (${Math.round(diff)}ms)`;
+                } else {
+                    dblBadge.classList.add('hidden');
+                }
+                lastLeftClickTime = now;
+            }
+
+            const btnPart = document.getElementById(`mouse-btn-${e.button}`);
+            if (btnPart) {
+                btnPart.style.fill = e.button === 2 ? '#a855f7' : '#06b6d4';
+            }
+        });
+
+        mouseZone.addEventListener('mouseup', (e) => {
+            const btnPart = document.getElementById(`mouse-btn-${e.button}`);
+            if (btnPart) {
+                btnPart.style.fill = e.button === 1 ? '#0f172a' : '#1e293b';
+            }
+        });
+
+        mouseZone.addEventListener('mousemove', (e) => {
+            const rect = mouseZone.getBoundingClientRect();
+            const relX = Math.round(e.clientX - rect.left);
+            const relY = Math.round(e.clientY - rect.top);
+            document.getElementById('mouse-coords').textContent = `${relX},${relY}`;
+
+            // Draw smooth pointer trail inside mouse preview box
+            if (mouseTrailCanvas) {
+                const cRect = mouseTrailCanvas.getBoundingClientRect();
+                mouseTrailCanvas.width = cRect.width;
+                mouseTrailCanvas.height = cRect.height;
+                const px = e.clientX - cRect.left;
+                const py = e.clientY - cRect.top;
+                trailPoints.push({ x: px, y: py, alpha: 1 });
+                if (trailPoints.length > 22) trailPoints.shift();
+
+                const ctx = mouseTrailCanvas.getContext('2d');
+                ctx.clearRect(0, 0, mouseTrailCanvas.width, mouseTrailCanvas.height);
+                for (let i = 1; i < trailPoints.length; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(trailPoints[i - 1].x, trailPoints[i - 1].y);
+                    ctx.lineTo(trailPoints[i].x, trailPoints[i].y);
+                    ctx.strokeStyle = `rgba(6, 182, 212, ${i / trailPoints.length})`;
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                }
+            }
+
+            mouseMoveEvents++;
+            const now = performance.now();
+            if (now - lastMouseHzCheck >= 500) {
+                const hz = Math.round((mouseMoveEvents * 1000) / (now - lastMouseHzCheck));
+                document.getElementById('mouse-hz').textContent = `${hz} Hz`;
+                mouseMoveEvents = 0;
+                lastMouseHzCheck = now;
+            }
+        });
+
+        mouseZone.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            scrollAccumulator += e.deltaY < 0 ? 1 : -1;
+            const wheelEl = document.getElementById('mouse-btn-1');
+            if (wheelEl) {
+                wheelEl.style.fill = e.deltaY < 0 ? '#10b981' : '#f59e0b';
+                setTimeout(() => { wheelEl.style.fill = '#0f172a'; }, 140);
+            }
+            document.getElementById('mouse-scroll-dir').textContent = `${e.deltaY < 0 ? 'أعلى ↑' : 'أسفل ↓'} (${scrollAccumulator})`;
+        }, { passive: false });
+
+        function resetMouseTest(e) {
+            if (e) e.stopPropagation();
+            totalMouseClicks = 0;
+            scrollAccumulator = 0;
+            clickTimestamps = [];
+            lastLeftClickTime = 0;
+            trailPoints = [];
+            document.getElementById('mouse-clicks-count').textContent = '0';
+            document.getElementById('mouse-cps').textContent = '0 CPS';
+            document.getElementById('mouse-hz').textContent = '0 Hz';
+            document.getElementById('mouse-scroll-dir').textContent = 'العجلة: 0';
+            document.getElementById('mouse-active-btn').textContent = '--';
+            document.getElementById('mouse-double-badge').classList.add('hidden');
+            if (mouseTrailCanvas) {
+                const ctx = mouseTrailCanvas.getContext('2d');
+                ctx.clearRect(0, 0, mouseTrailCanvas.width, mouseTrailCanvas.height);
+            }
+            showToast('تم تصفير عدادات فحص الفأرة', 'info');
+        }
+
+        async function scanBluetoothDevices() {
+            const resBox = document.getElementById('bt-device-result');
+            if (!navigator.bluetooth) {
+                showToast('متصفحك الحالي لا يدعم Web Bluetooth (استخدم Chrome أو Edge).', 'warn');
+                return;
+            }
+            try {
+                const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+                const devName = device.name || 'جهاز بلوتوث غير مسمى';
+                resBox.textContent = `متصل: ${devName} (${device.id.slice(0, 10)}...)`;
+                resBox.classList.remove('hidden');
+                showToast(`تم العثور على جهاز البلوتوث: ${devName}`, 'success');
+            } catch (err) {
+                showToast('تم إلغاء البحث عن أجهزة البلوتوث.', 'info');
+            }
+        }
+
+        function initSystemSpecs() {
+            document.getElementById('pc-screen-res').textContent = `${window.screen.width} × ${window.screen.height}`;
+            document.getElementById('pc-cpu-cores').textContent = `${navigator.hardwareConcurrency || 4} أنوية`;
+            document.getElementById('pc-ram-info').textContent = navigator.deviceMemory ? `~${navigator.deviceMemory} GB` : 'غير متاح';
+            document.getElementById('pc-color-depth').textContent = `${window.screen.colorDepth}-bit`;
+
+            try {
+                const glCanvas = document.createElement('canvas');
+                const gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    const gpuRenderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+                    document.getElementById('pc-gpu-info').textContent = gpuRenderer || 'WebGL GPU';
+                }
+            } catch (e) {
+                document.getElementById('pc-gpu-info').textContent = 'غير متاح';
+            }
+
+            let frames = 0;
+            let lastTime = performance.now();
+            function countFPS(now) {
+                frames++;
+                if (now - lastTime >= 1000) {
+                    document.getElementById('pc-fps-counter').textContent = `${frames} FPS`;
+                    frames = 0;
+                    lastTime = now;
+                }
+                requestAnimationFrame(countFPS);
+            }
+            requestAnimationFrame(countFPS);
+        }
+
+        // ==========================================
+        // 6. 100% REAL STREAMING SPEEDTEST ENGINE
+        // ==========================================
+        async function fetchNetworkDetails() {
+            const online = navigator.onLine;
+            const badge = document.getElementById('net-status-badge');
+            badge.innerHTML = online
+                ? `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> متصل بالإنترنت`
+                : `<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> غير متصل`;
+
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            document.getElementById('net-type').textContent = conn ? (conn.effectiveType || conn.type || 'Wi-Fi / Fiber').toUpperCase() : 'Wi-Fi / Broadband';
+
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                document.getElementById('net-ip').textContent = data.ip || '--';
+                document.getElementById('net-isp').textContent = data.org || data.country_name || 'مزود خدمة محلي';
+            } catch (e) {
+                try {
+                    const res2 = await fetch('https://api.ipify.org?format=json');
+                    const data2 = await res2.json();
+                    document.getElementById('net-ip').textContent = data2.ip;
+                    document.getElementById('net-isp').textContent = 'متصل بالشبكة';
+                } catch (err) {
+                    document.getElementById('net-ip').textContent = 'محمي / محلي';
+                    document.getElementById('net-isp').textContent = 'شبكة محلية';
+                }
+            }
+        }
+
+        let currentGaugeDisplay = 0;
+        let speedSparkPoints = [];
+
+        function renderSpeedGaugeFrame(liveMbps, sparkColor) {
+            currentGaugeDisplay += (liveMbps - currentGaugeDisplay) * 0.28;
+            const arc = document.getElementById('speed-arc');
+            const mainVal = document.getElementById('speed-main-value');
+            const graphCanvas = document.getElementById('speed-graph-canvas');
+            const gCtx = graphCanvas.getContext('2d');
+
+            mainVal.textContent = currentGaugeDisplay.toFixed(1);
+            const maxGauge = Math.max(100, Math.ceil(currentGaugeDisplay / 50) * 50);
+            const ratio = Math.min(currentGaugeDisplay / maxGauge, 1);
+            arc.style.strokeDashoffset = 282.7 * (1 - ratio);
+
+            speedSparkPoints.push(currentGaugeDisplay);
+            if (speedSparkPoints.length > 80) speedSparkPoints.shift();
+
+            graphCanvas.width = graphCanvas.offsetWidth;
+            graphCanvas.height = graphCanvas.offsetHeight;
+            gCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+            if (speedSparkPoints.length > 1) {
+                const peak = Math.max(...speedSparkPoints, 10) * 1.15;
+                gCtx.beginPath();
+                gCtx.strokeStyle = sparkColor;
+                gCtx.lineWidth = 2.5;
+                speedSparkPoints.forEach((pt, idx) => {
+                    const x = (idx / (speedSparkPoints.length - 1)) * graphCanvas.width;
+                    const y = graphCanvas.height - ((pt / peak) * (graphCanvas.height - 8)) - 4;
+                    if (idx === 0) gCtx.moveTo(x, y);
+                    else gCtx.lineTo(x, y);
+                });
+                gCtx.stroke();
+            }
+        }
+
+        async function measureRealDownloadStream() {
+            speedSparkPoints = [];
+            currentGaugeDisplay = 0;
+            let liveMeasuredMbps = 0;
+            let running = true;
+
+            function animLoop() {
+                if (!running) return;
+                renderSpeedGaugeFrame(liveMeasuredMbps, '#06b6d4');
+                requestAnimationFrame(animLoop);
+            }
+            requestAnimationFrame(animLoop);
+
+            try {
+                const bytesToDownload = 12000000;
+                const tStart = performance.now();
+                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${bytesToDownload}&r=${Date.now()}`, { cache: 'no-store' });
+                const reader = response.body.getReader();
+                let receivedBytes = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    receivedBytes += value.length;
+                    const elapsedSec = Math.max(0.05, (performance.now() - tStart) / 1000);
+                    liveMeasuredMbps = ((receivedBytes * 8) / elapsedSec) / 1000000;
+                    document.getElementById('res-download').textContent = `${liveMeasuredMbps.toFixed(1)} Mbps`;
+                }
+            } catch (e) {
+                const t0 = performance.now();
+                const r = await fetch(`https://httpbin.org/bytes/500000?r=${Date.now()}`, { cache: 'no-store' });
+                const buf = await r.arrayBuffer();
+                const sec = Math.max(0.05, (performance.now() - t0) / 1000);
+                liveMeasuredMbps = ((buf.byteLength * 8) / sec) / 1000000;
+                document.getElementById('res-download').textContent = `${liveMeasuredMbps.toFixed(1)} Mbps`;
+            }
+
+            await new Promise(r => setTimeout(r, 350));
+            running = false;
+            renderSpeedGaugeFrame(liveMeasuredMbps, '#06b6d4');
+            document.getElementById('speed-main-value').textContent = liveMeasuredMbps.toFixed(1);
+            return liveMeasuredMbps;
+        }
+
+        function measureRealUploadStream() {
+            return new Promise((resolve) => {
+                speedSparkPoints = [];
+                currentGaugeDisplay = 0;
+                let liveUploadMbps = 0;
+                let running = true;
+
+                function animLoop() {
+                    if (!running) return;
+                    renderSpeedGaugeFrame(liveUploadMbps, '#10b981');
+                    requestAnimationFrame(animLoop);
+                }
+                requestAnimationFrame(animLoop);
+
+                const uploadSize = 3000000;
+                const payload = new Uint8Array(uploadSize);
+                const xhr = new XMLHttpRequest();
+                const tStart = performance.now();
+
+                xhr.open('POST', `https://speed.cloudflare.com/__up?r=${Date.now()}`, true);
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable && e.loaded > 0) {
+                        const elapsedSec = Math.max(0.05, (performance.now() - tStart) / 1000);
+                        liveUploadMbps = ((e.loaded * 8) / elapsedSec) / 1000000;
+                        document.getElementById('res-upload').textContent = `${liveUploadMbps.toFixed(1)} Mbps`;
+                    }
+                };
+
+                xhr.onloadend = () => {
+                    setTimeout(() => {
+                        running = false;
+                        document.getElementById('speed-main-value').textContent = liveUploadMbps.toFixed(1);
+                        document.getElementById('res-upload').textContent = `${liveUploadMbps.toFixed(1)} Mbps`;
+                        resolve(liveUploadMbps);
+                    }, 300);
+                };
+
+                xhr.onerror = () => {
+                    running = false;
+                    resolve(0);
+                };
+
+                xhr.send(payload);
+            });
+        }
+
+        async function runSpeedTest() {
+            const btn = document.getElementById('btn-start-speedtest');
+            const phaseLbl = document.getElementById('speed-phase-label');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            document.getElementById('speed-main-value').textContent = '0.0';
+            document.getElementById('res-download').textContent = '-- Mbps';
+            document.getElementById('res-upload').textContent = '-- Mbps';
+
+            phaseLbl.textContent = 'جاري قياس زمن الاستجابة الحقيقي (Ping)...';
+            const pings = [];
+            for (let i = 0; i < 6; i++) {
+                const t0 = performance.now();
+                try {
+                    await fetch(`https://www.cloudflare.com/cdn-cgi/trace?t=${Date.now()}`, { mode: 'no-cors', cache: 'no-store' });
+                } catch (e) {}
+                pings.push(Math.max(5, Math.round(performance.now() - t0)));
+                await new Promise(r => setTimeout(r, 100));
+            }
+            const avgPing = Math.round(pings.reduce((a, b) => a + b, 0) / pings.length);
+            const jitter = Math.max(...pings) - Math.min(...pings);
+            document.getElementById('res-ping').textContent = `${avgPing} ms`;
+            document.getElementById('res-jitter').textContent = `${jitter} ms`;
+
+            phaseLbl.textContent = 'جاري قياس التحميل الفعلي (Real Stream)...';
+            await measureRealDownloadStream();
+
+            await new Promise(r => setTimeout(r, 400));
+
+            phaseLbl.textContent = 'جاري قياس الرفع الفعلي (Real Upload)...';
+            await measureRealUploadStream();
+
+            phaseLbl.textContent = 'اكتمل القياس الحقيقي بنجاح!';
+            document.getElementById('net-gaming-rating').textContent = avgPing < 55 ? 'ممتاز للألعاب (Low Ping)' : avgPing < 110 ? 'جيد جداً' : 'متوسط';
+            document.getElementById('net-gaming-rating').className = avgPing < 55 ? 'font-bold text-emerald-400' : 'font-bold text-amber-400';
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+            showToast('اكتمل الفحص الحقيقي لسرعة الإنترنت بنجاح!', 'success');
+        }
+
+        // ==========================================
+        // 7. AUTHENTIC DUAL GAMEPAD ENGINE (PS & XBOX)
+        // ==========================================
+        function setControllerPlatform(platform) {
+            currentControllerPlatform = platform;
+            const btnPs = document.getElementById('btn-skin-ps');
+            const btnXbox = document.getElementById('btn-skin-xbox');
+            const svgPs = document.getElementById('svg-controller-ps');
+            const svgXbox = document.getElementById('svg-controller-xbox');
+            const headerIcon = document.getElementById('gp-header-icon');
+            const rumbleBtn = document.getElementById('btn-gp-rumble');
+            const barL2 = document.getElementById('bar-l2');
+            const barR2 = document.getElementById('bar-r2');
+            const lblL2 = document.getElementById('lbl-l2');
+            const lblR2 = document.getElementById('lbl-r2');
+            const radarDotL = document.getElementById('radar-dot-left');
+            const radarDotR = document.getElementById('radar-dot-right');
+            const radarLblL = document.getElementById('radar-lbl-l');
+            const radarLblR = document.getElementById('radar-lbl-r');
+
+            if (platform === 'ps') {
+                btnPs.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition';
+                btnXbox.className = 'px-4 py-2 rounded-xl text-xs font-extrabold text-slate-400 hover:text-white flex items-center gap-1.5 transition';
+
+                svgPs.classList.remove('hidden');
+                svgXbox.classList.add('hidden');
+
+                headerIcon.className = 'w-8 h-8 rounded-lg bg-blue-500/20 text-sky-400 flex items-center justify-center text-base transition-colors';
+                headerIcon.innerHTML = '<i class="fa-brands fa-playstation"></i>';
+                rumbleBtn.className = 'px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-lg';
+
+                lblL2.textContent = 'L2';
+                lblR2.textContent = 'R2';
+                lblL2.className = 'text-sky-400 font-bold';
+                lblR2.className = 'text-sky-400 font-bold';
+                barL2.className = 'h-full bg-sky-500 transition-all duration-75';
+                barR2.className = 'h-full bg-sky-500 transition-all duration-75';
+
+                radarDotL.className = 'w-3.5 h-3.5 rounded-full bg-sky-400 shadow-md absolute transition-transform duration-75';
+                radarDotR.className = 'w-3.5 h-3.5 rounded-full bg-sky-400 shadow-md absolute transition-transform duration-75';
+                radarLblL.className = 'text-xs font-bold text-sky-400 block mb-2';
+                radarLblR.className = 'text-xs font-bold text-sky-400 block mb-2';
+            } else {
+                btnXbox.className = 'px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-green-500 text-white shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 transition';
+                btnPs.className = 'px-4 py-2 rounded-xl text-xs font-extrabold text-slate-400 hover:text-white flex items-center gap-1.5 transition';
+
+                svgXbox.classList.remove('hidden');
+                svgPs.classList.add('hidden');
+
+                headerIcon.className = 'w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base transition-colors';
+                headerIcon.innerHTML = '<i class="fa-brands fa-xbox"></i>';
+                rumbleBtn.className = 'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-lg';
+
+                lblL2.textContent = 'LT';
+                lblR2.textContent = 'RT';
+                lblL2.className = 'text-emerald-400 font-bold';
+                lblR2.className = 'text-emerald-400 font-bold';
+                barL2.className = 'h-full bg-emerald-500 transition-all duration-75';
+                barR2.className = 'h-full bg-emerald-500 transition-all duration-75';
+
+                radarDotL.className = 'w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-md absolute transition-transform duration-75';
+                radarDotR.className = 'w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-md absolute transition-transform duration-75';
+                radarLblL.className = 'text-xs font-bold text-emerald-400 block mb-2';
+                radarLblR.className = 'text-xs font-bold text-emerald-400 block mb-2';
+            }
+
+            if (currentTab === 'gamepad') {
+                const navGp = document.getElementById('nav-gamepad');
+                navGp.className = `nav-btn active flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-gradient-to-r ${platform === 'ps' ? 'from-blue-600 to-sky-500' : 'from-emerald-600 to-green-500'} text-white shadow-lg`;
+            }
+
+            applyDynamicBackdrop();
+        }
+
+        function pollGamepads() {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            let activeGp = null;
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) { activeGp = gamepads[i]; break; }
+            }
+
+            if (activeGp) {
+                document.getElementById('gp-name').textContent = activeGp.id;
+                document.getElementById('gp-sub').textContent = `متصلة بنجاح | الأزرار: ${activeGp.buttons.length} | المحاور: ${activeGp.axes.length}`;
+                document.getElementById('gp-status-icon').className = 'w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-lg';
+                document.getElementById('gp-status-icon').innerHTML = '<i class="fa-solid fa-gamepad"></i>';
+
+                const prefix = currentControllerPlatform === 'ps' ? 'ps' : 'xbox';
+                const activeClass = currentControllerPlatform === 'ps' ? 'gp-ps-active' : 'gp-xbox-active';
+
+                const pressedIndices = [];
+                activeGp.buttons.forEach((btn, idx) => {
+                    const el = document.getElementById(`${prefix}-btn-${idx}`);
+                    if (btn.pressed) {
+                        pressedIndices.push(`B${idx}`);
+                        if (el) el.classList.add(activeClass);
+                    } else {
+                        if (el) el.classList.remove(activeClass);
+                    }
+                });
+
+                document.getElementById('gp-active-buttons-list').textContent = pressedIndices.length ? pressedIndices.join(', ') : 'لا يوجد';
+
+                const l2Val = activeGp.buttons[6] ? Math.round(activeGp.buttons[6].value * 100) : 0;
+                const r2Val = activeGp.buttons[7] ? Math.round(activeGp.buttons[7].value * 100) : 0;
+                document.getElementById('val-l2').textContent = `${l2Val}%`;
+                document.getElementById('bar-l2').style.width = `${l2Val}%`;
+                document.getElementById('val-r2').textContent = `${r2Val}%`;
+                document.getElementById('bar-r2').style.width = `${r2Val}%`;
+
+                const lx = activeGp.axes[0] || 0;
+                const ly = activeGp.axes[1] || 0;
+                const rx = activeGp.axes[2] || 0;
+                const ry = activeGp.axes[3] || 0;
+
+                document.getElementById('axis-lx').textContent = lx.toFixed(4);
+                document.getElementById('axis-ly').textContent = ly.toFixed(4);
+                document.getElementById('axis-rx').textContent = rx.toFixed(4);
+                document.getElementById('axis-ry').textContent = ry.toFixed(4);
+
+                const driftL = Math.min(100, Math.hypot(lx, ly) * 100).toFixed(1);
+                const driftR = Math.min(100, Math.hypot(rx, ry) * 100).toFixed(1);
+                document.getElementById('drift-l-pct').textContent = `${driftL}%`;
+                document.getElementById('drift-r-pct').textContent = `${driftR}%`;
+
+                if (currentControllerPlatform === 'ps') {
+                    const psL = document.getElementById('ps-stick-left');
+                    const psR = document.getElementById('ps-stick-right');
+                    if (psL) { psL.setAttribute('cx', 205 + lx * 14); psL.setAttribute('cy', 176 + ly * 14); }
+                    if (psR) { psR.setAttribute('cx', 335 + rx * 14); psR.setAttribute('cy', 176 + ry * 14); }
+                } else {
+                    const xbL = document.getElementById('xbox-stick-left');
+                    const xbR = document.getElementById('xbox-stick-right');
+                    if (xbL) { xbL.setAttribute('cx', 136 + lx * 14); xbL.setAttribute('cy', 114 + ly * 14); }
+                    if (xbR) { xbR.setAttribute('cx', 342 + rx * 14); xbR.setAttribute('cy', 172 + ry * 14); }
+                }
+
+                document.getElementById('radar-dot-left').style.transform = `translate(${lx * 36}px, ${ly * 36}px)`;
+                document.getElementById('radar-dot-right').style.transform = `translate(${rx * 36}px, ${ry * 36}px)`;
+            }
+
+            requestAnimationFrame(pollGamepads);
+        }
+
+        window.addEventListener('gamepadconnected', (e) => {
+            showToast(`تم توصيل يد التحكم: ${e.gamepad.id}`, 'success');
+            if (e.gamepad.id.toLowerCase().includes('xbox')) setControllerPlatform('xbox');
+            else setControllerPlatform('ps');
+        });
+
+        function testGamepadRumble(weak = 0.8, strong = 1.0) {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            const gp = gamepads[0] || gamepads[1];
+            if (gp && gp.vibrationActuator) {
+                gp.vibrationActuator.playEffect('dual-rumble', {
+                    startDelay: 0,
+                    duration: 750,
+                    weakMagnitude: weak,
+                    strongMagnitude: strong
+                });
+                showToast('تم تشغيل محرك الاهتزاز في يد التحكم بنجاح!', 'success');
+            } else {
+                showToast('تأكد من توصيل يد تحكم تدعم الاهتزاز والضغط على زر فيها أولاً.', 'warn');
+            }
+        }
+
+        // ==========================================
+        // 8. REACTION TIME TEST ENGINE
+        // ==========================================
+        let reactionState = 'idle'; // idle | waiting | ready | result | early
+        let reactionTimeout = null;
+        let reactionGreenTimestamp = 0;
+        let reactionScores = [];
+
+        function getReactionRank(ms) {
+            if (ms < 165) return 'أسطوري (Pro Esports)';
+            if (ms < 215) return 'سريع جداً (محترف)';
+            if (ms < 275) return 'ممتاز (طبيعي سريع)';
+            if (ms < 350) return 'متوسط';
+            return 'بطيء (حاول التركيز)';
+        }
+
+        function handleReactionTrigger(e) {
+            if (e && e.type === 'touchstart') e.preventDefault();
+            const arena = document.getElementById('reaction-arena');
+            const iconWrap = document.getElementById('reaction-icon-wrap');
+            const icon = document.getElementById('reaction-icon');
+            const title = document.getElementById('reaction-main-title');
+            const desc = document.getElementById('reaction-sub-desc');
+
+            if (reactionState === 'idle' || reactionState === 'result' || reactionState === 'early') {
+                reactionState = 'waiting';
+                arena.className = 'rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-100 border-2 border-rose-500 bg-rose-600 shadow-2xl shadow-rose-600/30 relative overflow-hidden';
+                iconWrap.className = 'w-20 h-20 rounded-3xl bg-white/20 text-white flex items-center justify-center text-4xl mb-5 shadow-lg';
+                icon.className = 'fa-solid fa-hourglass-half animate-pulse';
+                title.textContent = 'انتظر اللون الأخضر...';
+                desc.textContent = 'لا تضغط الآن! استعد للضغط فور تحول الشاشة للأخضر.';
+
+                const randomDelay = 1400 + Math.random() * 3200;
+                clearTimeout(reactionTimeout);
+                reactionTimeout = setTimeout(() => {
+                    reactionState = 'ready';
+                    reactionGreenTimestamp = performance.now();
+                    arena.className = 'rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none border-2 border-emerald-300 bg-emerald-500 shadow-2xl shadow-emerald-500/40 relative overflow-hidden';
+                    iconWrap.className = 'w-20 h-20 rounded-3xl bg-white/25 text-white flex items-center justify-center text-4xl mb-5 shadow-lg scale-110';
+                    icon.className = 'fa-solid fa-bolt';
+                    title.textContent = 'اضغط الآن! (CLICK!)';
+                    desc.textContent = 'بأقصى سرعة!';
+                }, randomDelay);
+
+            } else if (reactionState === 'waiting') {
+                clearTimeout(reactionTimeout);
+                reactionState = 'early';
+                arena.className = 'rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-150 border-2 border-amber-400 bg-amber-600 shadow-2xl relative overflow-hidden';
+                iconWrap.className = 'w-20 h-20 rounded-3xl bg-white/20 text-white flex items-center justify-center text-4xl mb-5 shadow-lg';
+                icon.className = 'fa-solid fa-triangle-exclamation';
+                title.textContent = 'ضغطت مبكراً جداً!';
+                desc.textContent = 'انتظر حتى يظهر اللون الأخضر. اضغط للمحاولة مرة أخرى.';
+                showToast('ضغطت قبل ظهور اللون الأخضر!', 'warn');
+
+            } else if (reactionState === 'ready') {
+                const elapsedMs = Math.max(1, Math.round(performance.now() - reactionGreenTimestamp));
+                reactionState = 'result';
+                reactionScores.unshift(elapsedMs);
+                if (reactionScores.length > 10) reactionScores.pop();
+
+                const best = Math.min(...reactionScores);
+                const avg = Math.round(reactionScores.reduce((a, b) => a + b, 0) / reactionScores.length);
+                const rank = getReactionRank(elapsedMs);
+
+                document.getElementById('rt-last').textContent = `${elapsedMs} ms`;
+                document.getElementById('rt-best').textContent = `${best} ms`;
+                document.getElementById('rt-avg').textContent = `${avg} ms`;
+                document.getElementById('rt-rank').textContent = rank;
+
+                const histEl = document.getElementById('rt-history-list');
+                histEl.innerHTML = reactionScores.map((s, i) =>
+                    `<span class="px-2.5 py-1 rounded-lg ${i === 0 ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold' : 'bg-white/5 text-slate-300'}">${s} ms</span>`
+                ).join('');
+
+                arena.className = 'rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-150 border-2 border-cyan-400/50 bg-gradient-to-br from-slate-900 via-cyan-950/60 to-slate-950 shadow-2xl relative overflow-hidden';
+                iconWrap.className = 'w-20 h-20 rounded-3xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 flex items-center justify-center text-4xl mb-5 shadow-lg';
+                icon.className = 'fa-solid fa-stopwatch';
+                title.textContent = `${elapsedMs} ms`;
+                desc.textContent = `التقييم: ${rank} — اضغط في أي مكان للمحاولة مجدداً.`;
+            }
+        }
+
+        function resetReactionStats() {
+            clearTimeout(reactionTimeout);
+            reactionState = 'idle';
+            reactionScores = [];
+            document.getElementById('rt-last').textContent = '-- ms';
+            document.getElementById('rt-best').textContent = '-- ms';
+            document.getElementById('rt-avg').textContent = '-- ms';
+            document.getElementById('rt-rank').textContent = 'بانتظار المحاولة';
+            document.getElementById('rt-history-list').innerHTML = '<span class="text-slate-500">لا توجد محاولات مسجلة بعد</span>';
+
+            const arena = document.getElementById('reaction-arena');
+            arena.className = 'rounded-3xl min-h-[330px] sm:min-h-[380px] p-8 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-150 border-2 border-amber-500/30 bg-gradient-to-br from-slate-900/90 via-amber-950/30 to-slate-950/90 shadow-2xl relative overflow-hidden';
+            document.getElementById('reaction-icon-wrap').className = 'w-20 h-20 rounded-3xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-4xl mb-5 shadow-lg transition-transform duration-200';
+            document.getElementById('reaction-icon').className = 'fa-solid fa-bolt';
+            document.getElementById('reaction-main-title').textContent = 'اضغط للبدء في اختبار رد الفعل';
+            document.getElementById('reaction-sub-desc').innerHTML = 'عندما يتحول لون الشاشة من <span class="text-rose-400 font-bold">الأحمر</span> إلى <span class="text-emerald-400 font-bold">الأخضر</span>، اضغط بأقصى سرعة ممكنة!';
+            showToast('تم تصفير إحصائيات رد الفعل', 'info');
+        }
+
+        // Boot Engines on Load
+        window.onload = function () {
+            initSystemSpecs();
+            fetchNetworkDetails();
+            pollGamepads();
+            applyDynamicBackdrop();
+        };
+    </script>
+</body>
+</html>
